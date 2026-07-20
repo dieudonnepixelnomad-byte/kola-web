@@ -1,0 +1,202 @@
+// prisma/schema.prisma
+// Cf. docs/kola-web-cahier-des-charges.md §5 pour le detail des choix de modelisation.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Un seul tenant existera en base au MVP (seed manuel).
+// Le modele existe deja pour que le passage en V1 (multi-tenant + Better Auth
+// "organizations") ne demande aucune migration de schema.
+
+model Tenant {
+  id             String @id @default(cuid())
+  nom            String
+  email          String @unique
+  cleApiPublique String @unique @default(cuid())
+  cleApiPrivee   String @unique @default(cuid())
+
+  // Config provider de paiement (chiffree au niveau applicatif avant ecriture)
+  campayAppId     String?
+  campayAppSecret String?
+
+  apps      App[]
+  createdAt DateTime @default(now())
+}
+
+model App {
+  id         String @id @default(cuid())
+  tenantId   String
+  tenant     Tenant @relation(fields: [tenantId], references: [id])
+  nom        String
+  plateforme String @default("android") // android | ios (V2)
+
+  offres Offre[]
+
+  createdAt DateTime @default(now())
+}
+
+model Offre {
+  id               String @id @default(cuid())
+  appId            String
+  app              App    @relation(fields: [appId], references: [id])
+  nom              String // ex: "Premium"
+  slug             String // ex: "premium" - utilise par le SDK dans isActive('premium')
+  prix             Int // en FCFA, entier (pas de centimes)
+  devise           String @default("XAF")
+  periodiciteJours Int    @default(30)
+  toleranceJours   Int    @default(3)
+
+  abonnements Abonnement[]
+
+  createdAt DateTime @default(now())
+
+  @@unique([appId, slug])
+}
+
+model Abonne {
+  id                 String  @id @default(cuid())
+  tenantId           String
+  identifiantExterne String // numero de telephone normalise (E.164)
+  telephone          String?
+  email              String?
+
+  abonnements Abonnement[]
+
+  createdAt DateTime @default(now())
+
+  @@unique([tenantId, identifiantExterne])
+}
+
+enum StatutAbonnement {
+  ACTIF
+  TOLERANCE
+  COUPE
+  EXPIRE
+}
+
+model Abonnement {
+  id       String @id @default(cuid())
+  abonneId String
+  abonne   Abonne @relation(fields: [abonneId], references: [id])
+  offreId  String
+  offre    Offre  @relation(fields: [offreId], references: [id])
+
+  statut         StatutAbonnement @default(COUPE)
+  dateEcheance   DateTime?
+  dateActivation DateTime?
+
+  lienPaiement String @unique @default(cuid()) // utilise dans /pay/[lienPaiement], permanent
+
+  transactions Transaction[]
+  logsRelance  LogRelance[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([statut, dateEcheance])
+}
+
+enum StatutTransaction {
+  EN_ATTENTE
+  REUSSIE
+  ECHOUEE
+}
+
+model Transaction {
+  id           String     @id @default(cuid())
+  abonnementId String
+  abonnement   Abonnement @relation(fields: [abonnementId], references: [id])
+
+  providerTransactionId String            @unique // idempotence : cle d'unicite Campay
+  provider              String            @default("campay")
+  montant               Int
+  statut                StatutTransaction @default(EN_ATTENTE)
+
+  recuLe   DateTime  @default(now())
+  traiteLe DateTime?
+
+  payloadBrut Json? // trace brute du webhook, utile en debug
+}
+
+enum TypeRelance {
+  J_MOINS_3
+  J_PLUS_7
+}
+
+model LogRelance {
+  id           String      @id @default(cuid())
+  abonnementId String
+  abonnement   Abonnement  @relation(fields: [abonnementId], references: [id])
+  type         TypeRelance
+  envoyeLe     DateTime    @default(now())
+  canal        String      @default("whatsapp_manuel") // MVP : declenche mais envoye a la main
+}
+
+model User {
+  id            String    @id
+  name          String
+  email         String
+  emailVerified Boolean   @default(false)
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  sessions      Session[]
+  accounts      Account[]
+
+  @@unique([email])
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
