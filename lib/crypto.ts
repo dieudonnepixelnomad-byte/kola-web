@@ -1,4 +1,4 @@
-import { createCipheriv, createDecipheriv, randomBytes } from "crypto";
+import { createCipheriv, createDecipheriv, createHash, randomBytes, timingSafeEqual } from "crypto";
 
 const ALGORITHM = "aes-256-gcm";
 const IV_LENGTH = 12;
@@ -26,4 +26,21 @@ export function decrypt(cipherText: string): string {
   decipher.setAuthTag(Buffer.from(authTagHex, "hex"));
   const decrypted = Buffer.concat([decipher.update(Buffer.from(dataHex, "hex")), decipher.final()]);
   return decrypted.toString("utf8");
+}
+
+// Cle secrete d'App (API publique REST, §9) : haute entropie, jamais choisie
+// par un humain -- hash simple suffisant (pas de bcrypt/argon2 necessaire).
+export function genererCleSecrete(): string {
+  return `sk_${randomBytes(24).toString("hex")}`;
+}
+
+export function hashSecret(secret: string): string {
+  return createHash("sha256").update(secret).digest("hex");
+}
+
+export function verifierSecret(secret: string, hash: string): boolean {
+  const attendu = Buffer.from(hashSecret(secret), "hex");
+  const recu = Buffer.from(hash, "hex");
+  if (attendu.length !== recu.length) return false;
+  return timingSafeEqual(attendu, recu);
 }

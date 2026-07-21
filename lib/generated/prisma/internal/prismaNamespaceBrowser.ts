@@ -52,16 +52,24 @@ export const AnyNull = runtime.AnyNull
 
 export const ModelName = {
   Tenant: 'Tenant',
+  ConfigurationPaiement: 'ConfigurationPaiement',
   App: 'App',
   Offre: 'Offre',
   Abonne: 'Abonne',
   Abonnement: 'Abonnement',
   Transaction: 'Transaction',
+  ModeleRelance: 'ModeleRelance',
   LogRelance: 'LogRelance',
+  WebhookSortant: 'WebhookSortant',
+  LivraisonWebhook: 'LivraisonWebhook',
+  JournalAudit: 'JournalAudit',
   User: 'User',
   Session: 'Session',
   Account: 'Account',
-  Verification: 'Verification'
+  Verification: 'Verification',
+  Organization: 'Organization',
+  Member: 'Member',
+  Invitation: 'Invitation'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -83,15 +91,30 @@ export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof
 export const TenantScalarFieldEnum = {
   id: 'id',
   nom: 'nom',
-  email: 'email',
-  cleApiPublique: 'cleApiPublique',
-  cleApiPrivee: 'cleApiPrivee',
-  campayAppId: 'campayAppId',
-  campayAppSecret: 'campayAppSecret',
+  slug: 'slug',
+  estSysteme: 'estSysteme',
+  statutPlateforme: 'statutPlateforme',
   createdAt: 'createdAt'
 } as const
 
 export type TenantScalarFieldEnum = (typeof TenantScalarFieldEnum)[keyof typeof TenantScalarFieldEnum]
+
+
+export const ConfigurationPaiementScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  prestataire: 'prestataire',
+  nom: 'nom',
+  identifiantsChiffres: 'identifiantsChiffres',
+  identifiantsIv: 'identifiantsIv',
+  identifiantsTag: 'identifiantsTag',
+  actif: 'actif',
+  parDefaut: 'parDefaut',
+  verifieLe: 'verifieLe',
+  createdAt: 'createdAt'
+} as const
+
+export type ConfigurationPaiementScalarFieldEnum = (typeof ConfigurationPaiementScalarFieldEnum)[keyof typeof ConfigurationPaiementScalarFieldEnum]
 
 
 export const AppScalarFieldEnum = {
@@ -99,6 +122,9 @@ export const AppScalarFieldEnum = {
   tenantId: 'tenantId',
   nom: 'nom',
   plateforme: 'plateforme',
+  cleApiPublique: 'cleApiPublique',
+  cleApiSecreteHash: 'cleApiSecreteHash',
+  cleApiSecreteIndice: 'cleApiSecreteIndice',
   createdAt: 'createdAt'
 } as const
 
@@ -114,6 +140,8 @@ export const OffreScalarFieldEnum = {
   devise: 'devise',
   periodiciteJours: 'periodiciteJours',
   toleranceJours: 'toleranceJours',
+  actif: 'actif',
+  configurationId: 'configurationId',
   createdAt: 'createdAt'
 } as const
 
@@ -150,6 +178,7 @@ export type AbonnementScalarFieldEnum = (typeof AbonnementScalarFieldEnum)[keyof
 export const TransactionScalarFieldEnum = {
   id: 'id',
   abonnementId: 'abonnementId',
+  reference: 'reference',
   providerTransactionId: 'providerTransactionId',
   provider: 'provider',
   montant: 'montant',
@@ -162,15 +191,72 @@ export const TransactionScalarFieldEnum = {
 export type TransactionScalarFieldEnum = (typeof TransactionScalarFieldEnum)[keyof typeof TransactionScalarFieldEnum]
 
 
+export const ModeleRelanceScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  type: 'type',
+  canal: 'canal',
+  contenu: 'contenu',
+  actif: 'actif',
+  createdAt: 'createdAt'
+} as const
+
+export type ModeleRelanceScalarFieldEnum = (typeof ModeleRelanceScalarFieldEnum)[keyof typeof ModeleRelanceScalarFieldEnum]
+
+
 export const LogRelanceScalarFieldEnum = {
   id: 'id',
   abonnementId: 'abonnementId',
   type: 'type',
-  envoyeLe: 'envoyeLe',
-  canal: 'canal'
+  canal: 'canal',
+  statutEnvoi: 'statutEnvoi',
+  erreur: 'erreur',
+  envoyeLe: 'envoyeLe'
 } as const
 
 export type LogRelanceScalarFieldEnum = (typeof LogRelanceScalarFieldEnum)[keyof typeof LogRelanceScalarFieldEnum]
+
+
+export const WebhookSortantScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  url: 'url',
+  secret: 'secret',
+  evenements: 'evenements',
+  actif: 'actif',
+  createdAt: 'createdAt'
+} as const
+
+export type WebhookSortantScalarFieldEnum = (typeof WebhookSortantScalarFieldEnum)[keyof typeof WebhookSortantScalarFieldEnum]
+
+
+export const LivraisonWebhookScalarFieldEnum = {
+  id: 'id',
+  webhookSortantId: 'webhookSortantId',
+  evenement: 'evenement',
+  payload: 'payload',
+  statutHttp: 'statutHttp',
+  tentatives: 'tentatives',
+  livreLe: 'livreLe',
+  prochainEssai: 'prochainEssai',
+  createdAt: 'createdAt'
+} as const
+
+export type LivraisonWebhookScalarFieldEnum = (typeof LivraisonWebhookScalarFieldEnum)[keyof typeof LivraisonWebhookScalarFieldEnum]
+
+
+export const JournalAuditScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  utilisateurId: 'utilisateurId',
+  action: 'action',
+  cible: 'cible',
+  meta: 'meta',
+  ip: 'ip',
+  createdAt: 'createdAt'
+} as const
+
+export type JournalAuditScalarFieldEnum = (typeof JournalAuditScalarFieldEnum)[keyof typeof JournalAuditScalarFieldEnum]
 
 
 export const UserScalarFieldEnum = {
@@ -194,7 +280,8 @@ export const SessionScalarFieldEnum = {
   updatedAt: 'updatedAt',
   ipAddress: 'ipAddress',
   userAgent: 'userAgent',
-  userId: 'userId'
+  userId: 'userId',
+  activeOrganizationId: 'activeOrganizationId'
 } as const
 
 export type SessionScalarFieldEnum = (typeof SessionScalarFieldEnum)[keyof typeof SessionScalarFieldEnum]
@@ -231,6 +318,43 @@ export const VerificationScalarFieldEnum = {
 export type VerificationScalarFieldEnum = (typeof VerificationScalarFieldEnum)[keyof typeof VerificationScalarFieldEnum]
 
 
+export const OrganizationScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  slug: 'slug',
+  logo: 'logo',
+  createdAt: 'createdAt',
+  metadata: 'metadata'
+} as const
+
+export type OrganizationScalarFieldEnum = (typeof OrganizationScalarFieldEnum)[keyof typeof OrganizationScalarFieldEnum]
+
+
+export const MemberScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  userId: 'userId',
+  role: 'role',
+  createdAt: 'createdAt'
+} as const
+
+export type MemberScalarFieldEnum = (typeof MemberScalarFieldEnum)[keyof typeof MemberScalarFieldEnum]
+
+
+export const InvitationScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  email: 'email',
+  role: 'role',
+  status: 'status',
+  expiresAt: 'expiresAt',
+  createdAt: 'createdAt',
+  inviterId: 'inviterId'
+} as const
+
+export type InvitationScalarFieldEnum = (typeof InvitationScalarFieldEnum)[keyof typeof InvitationScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -245,6 +369,13 @@ export const NullableJsonNullValueInput = {
 } as const
 
 export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
+
+
+export const JsonNullValueInput = {
+  JsonNull: JsonNull
+} as const
+
+export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
 
 
 export const QueryMode = {

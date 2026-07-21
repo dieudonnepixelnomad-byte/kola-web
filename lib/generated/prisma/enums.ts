@@ -9,6 +9,16 @@
 * 🟢 You can import this file directly.
 */
 
+export const PrestataireType = {
+  CAMPAY: 'CAMPAY',
+  MESOMB: 'MESOMB',
+  PAYDUNYA: 'PAYDUNYA',
+  FLUTTERWAVE: 'FLUTTERWAVE'
+} as const
+
+export type PrestataireType = (typeof PrestataireType)[keyof typeof PrestataireType]
+
+
 export const StatutAbonnement = {
   ACTIF: 'ACTIF',
   TOLERANCE: 'TOLERANCE',
@@ -30,7 +40,17 @@ export type StatutTransaction = (typeof StatutTransaction)[keyof typeof StatutTr
 
 export const TypeRelance = {
   J_MOINS_3: 'J_MOINS_3',
+  J_ECHEANCE: 'J_ECHEANCE',
   J_PLUS_7: 'J_PLUS_7'
 } as const
 
 export type TypeRelance = (typeof TypeRelance)[keyof typeof TypeRelance]
+
+
+export const CanalRelance = {
+  WHATSAPP: 'WHATSAPP',
+  SMS: 'SMS',
+  EMAIL: 'EMAIL'
+} as const
+
+export type CanalRelance = (typeof CanalRelance)[keyof typeof CanalRelance]

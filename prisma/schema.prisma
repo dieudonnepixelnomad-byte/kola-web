@@ -10,23 +10,56 @@ datasource db {
   provider = "postgresql"
 }
 
-// Un seul tenant existera en base au MVP (seed manuel).
-// Le modele existe deja pour que le passage en V1 (multi-tenant + Better Auth
-// "organizations") ne demande aucune migration de schema.
+// SaaS multi-tenant complet (cf. docs/kola-web-cahier-des-charges.md).
+// Tenant = source de verite domaine, partage son id avec Organization
+// (Better Auth = source de verite auth/membership), lies 1:1 par PK
+// commune. Jamais de requete metier sans filtrer par tenantId (§5.3).
 
 model Tenant {
-  id             String @id @default(cuid())
-  nom            String
-  email          String @unique
-  cleApiPublique String @unique @default(cuid())
-  cleApiPrivee   String @unique @default(cuid())
+  id               String           @id
+  organization     Organization     @relation(fields: [id], references: [id], onDelete: Cascade)
+  nom              String
+  slug             String           @unique
+  estSysteme       Boolean          @default(false) // true uniquement pour le tenant "Kola" (dogfooding, §11)
+  statutPlateforme StatutAbonnement @default(ACTIF) // denormalise, reflete l'abonnement du tenant a Kola lui-meme
 
-  // Config provider de paiement (chiffree au niveau applicatif avant ecriture)
-  campayAppId     String?
-  campayAppSecret String?
+  apps             App[]
+  configurations   ConfigurationPaiement[]
+  modelesRelance   ModeleRelance[]
+  webhooksSortants WebhookSortant[]
+  journalAudit     JournalAudit[]
 
-  apps      App[]
   createdAt DateTime @default(now())
+}
+
+enum PrestataireType {
+  CAMPAY
+  MESOMB
+  PAYDUNYA
+  FLUTTERWAVE
+}
+
+model ConfigurationPaiement {
+  id          String          @id @default(cuid())
+  tenantId    String
+  tenant      Tenant          @relation(fields: [tenantId], references: [id])
+  prestataire PrestataireType
+  nom         String // libelle libre, ex: "Campay production"
+
+  // Identifiants chiffres au niveau applicatif (AES-256-GCM, cf. lib/crypto.ts)
+  identifiantsChiffres String
+  identifiantsIv       String
+  identifiantsTag      String
+
+  actif     Boolean   @default(true)
+  parDefaut Boolean   @default(false) // au plus un par tenant (garde applicative, cf. lib/tenant.ts)
+  verifieLe DateTime?
+
+  offres Offre[]
+
+  createdAt DateTime @default(now())
+
+  @@index([tenantId])
 }
 
 model App {
@@ -36,21 +69,31 @@ model App {
   nom        String
   plateforme String @default("android") // android | ios (V2)
 
+  cleApiPublique      String  @unique @default(cuid()) // consommee par le SDK, publique
+  cleApiSecreteHash   String? @unique // hash de la cle secrete (API REST publique, §9)
+  cleApiSecreteIndice String? // derniers caracteres, affichage type "sk_...a3f9"
+
   offres Offre[]
 
   createdAt DateTime @default(now())
+
+  @@index([tenantId])
 }
 
 model Offre {
-  id               String @id @default(cuid())
+  id               String  @id @default(cuid())
   appId            String
-  app              App    @relation(fields: [appId], references: [id])
+  app              App     @relation(fields: [appId], references: [id])
   nom              String // ex: "Premium"
   slug             String // ex: "premium" - utilise par le SDK dans isActive('premium')
   prix             Int // en FCFA, entier (pas de centimes)
-  devise           String @default("XAF")
-  periodiciteJours Int    @default(30)
-  toleranceJours   Int    @default(3)
+  devise           String  @default("XAF")
+  periodiciteJours Int     @default(30)
+  toleranceJours   Int     @default(3)
+  actif            Boolean @default(true)
+
+  configurationId String?
+  configuration   ConfigurationPaiement? @relation(fields: [configurationId], references: [id])
 
   abonnements Abonnement[]
 
@@ -113,8 +156,9 @@ model Transaction {
   abonnementId String
   abonnement   Abonnement @relation(fields: [abonnementId], references: [id])
 
-  providerTransactionId String            @unique // idempotence : cle d'unicite Campay
-  provider              String            @default("campay")
+  reference             String            @unique // notre id, genere avant l'appel provider (§6.5)
+  providerTransactionId String? // id cote provider, connu apres initiation
+  provider              PrestataireType   @default(CAMPAY)
   montant               Int
   statut                StatutTransaction @default(EN_ATTENTE)
 
@@ -122,20 +166,95 @@ model Transaction {
   traiteLe DateTime?
 
   payloadBrut Json? // trace brute du webhook, utile en debug
+
+  @@unique([provider, providerTransactionId])
+  @@index([statut, recuLe])
 }
 
 enum TypeRelance {
   J_MOINS_3
+  J_ECHEANCE
   J_PLUS_7
 }
 
+enum CanalRelance {
+  WHATSAPP
+  SMS
+  EMAIL
+}
+
+model ModeleRelance {
+  id       String       @id @default(cuid())
+  tenantId String
+  tenant   Tenant       @relation(fields: [tenantId], references: [id])
+  type     TypeRelance
+  canal    CanalRelance @default(WHATSAPP)
+  contenu  String // variables : {nom} {offre} {prix} {jours} {lien}
+  actif    Boolean      @default(true)
+
+  createdAt DateTime @default(now())
+
+  @@unique([tenantId, type, canal])
+}
+
 model LogRelance {
-  id           String      @id @default(cuid())
+  id           String       @id @default(cuid())
   abonnementId String
-  abonnement   Abonnement  @relation(fields: [abonnementId], references: [id])
+  abonnement   Abonnement   @relation(fields: [abonnementId], references: [id])
   type         TypeRelance
-  envoyeLe     DateTime    @default(now())
-  canal        String      @default("whatsapp_manuel") // MVP : declenche mais envoye a la main
+  canal        CanalRelance @default(WHATSAPP)
+  statutEnvoi  String       @default("ENVOYE") // ENVOYE | ECHEC | IGNORE
+  erreur       String?
+  envoyeLe     DateTime     @default(now())
+
+  @@index([abonnementId, type])
+}
+
+model WebhookSortant {
+  id         String   @id @default(cuid())
+  tenantId   String
+  tenant     Tenant   @relation(fields: [tenantId], references: [id])
+  url        String
+  secret     String // signature HMAC-SHA256, chiffre au niveau applicatif
+  evenements String[] // ex: ["abonnement.active", "abonnement.coupe"]
+  actif      Boolean  @default(true)
+
+  livraisons LivraisonWebhook[]
+
+  createdAt DateTime @default(now())
+
+  @@index([tenantId])
+}
+
+model LivraisonWebhook {
+  id               String         @id @default(cuid())
+  webhookSortantId String
+  webhookSortant   WebhookSortant @relation(fields: [webhookSortantId], references: [id])
+  evenement        String
+  payload          Json
+  statutHttp       Int?
+  tentatives       Int            @default(0)
+  livreLe          DateTime?
+  prochainEssai    DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([prochainEssai])
+}
+
+model JournalAudit {
+  id            String  @id @default(cuid())
+  tenantId      String
+  tenant        Tenant  @relation(fields: [tenantId], references: [id])
+  utilisateurId String?
+  action        String // ex: "config.cree", "offre.modifiee", "membre.invite"
+  cible         String?
+  meta          Json?
+  ip            String?
+
+  createdAt DateTime @default(now())
+
+  @@index([tenantId, createdAt])
 }
 
 model User {
@@ -148,6 +267,9 @@ model User {
   updatedAt     DateTime  @updatedAt
   sessions      Session[]
   accounts      Account[]
+
+  members     Member[]
+  invitations Invitation[]
 
   @@unique([email])
   @@map("user")
@@ -163,6 +285,8 @@ model Session {
   userAgent String?
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  activeOrganizationId String?
 
   @@unique([token])
   @@index([userId])
@@ -199,4 +323,50 @@ model Verification {
 
   @@index([identifier])
   @@map("verification")
+}
+
+model Organization {
+  id          String       @id
+  name        String
+  slug        String
+  logo        String?
+  createdAt   DateTime
+  metadata    String?
+  members     Member[]
+  invitations Invitation[]
+  tenant      Tenant?
+
+  @@unique([slug])
+  @@map("organization")
+}
+
+model Member {
+  id             String       @id
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role           String       @default("member")
+  createdAt      DateTime
+
+  @@index([organizationId])
+  @@index([userId])
+  @@map("member")
+}
+
+model Invitation {
+  id             String       @id
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  email          String
+  role           String?
+  status         String       @default("pending")
+  expiresAt      DateTime
+  createdAt      DateTime     @default(now())
+  inviterId      String
+  user           User         @relation(fields: [inviterId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([email])
+  @@map("invitation")
 }

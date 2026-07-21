@@ -37,8 +37,9 @@ export type TransactionSumAggregateOutputType = {
 export type TransactionMinAggregateOutputType = {
   id: string | null
   abonnementId: string | null
+  reference: string | null
   providerTransactionId: string | null
-  provider: string | null
+  provider: $Enums.PrestataireType | null
   montant: number | null
   statut: $Enums.StatutTransaction | null
   recuLe: Date | null
@@ -48,8 +49,9 @@ export type TransactionMinAggregateOutputType = {
 export type TransactionMaxAggregateOutputType = {
   id: string | null
   abonnementId: string | null
+  reference: string | null
   providerTransactionId: string | null
-  provider: string | null
+  provider: $Enums.PrestataireType | null
   montant: number | null
   statut: $Enums.StatutTransaction | null
   recuLe: Date | null
@@ -59,6 +61,7 @@ export type TransactionMaxAggregateOutputType = {
 export type TransactionCountAggregateOutputType = {
   id: number
   abonnementId: number
+  reference: number
   providerTransactionId: number
   provider: number
   montant: number
@@ -81,6 +84,7 @@ export type TransactionSumAggregateInputType = {
 export type TransactionMinAggregateInputType = {
   id?: true
   abonnementId?: true
+  reference?: true
   providerTransactionId?: true
   provider?: true
   montant?: true
@@ -92,6 +96,7 @@ export type TransactionMinAggregateInputType = {
 export type TransactionMaxAggregateInputType = {
   id?: true
   abonnementId?: true
+  reference?: true
   providerTransactionId?: true
   provider?: true
   montant?: true
@@ -103,6 +108,7 @@ export type TransactionMaxAggregateInputType = {
 export type TransactionCountAggregateInputType = {
   id?: true
   abonnementId?: true
+  reference?: true
   providerTransactionId?: true
   provider?: true
   montant?: true
@@ -202,8 +208,9 @@ export type TransactionGroupByArgs<ExtArgs extends runtime.Types.Extensions.Inte
 export type TransactionGroupByOutputType = {
   id: string
   abonnementId: string
-  providerTransactionId: string
-  provider: string
+  reference: string
+  providerTransactionId: string | null
+  provider: $Enums.PrestataireType
   montant: number
   statut: $Enums.StatutTransaction
   recuLe: Date
@@ -237,8 +244,9 @@ export type TransactionWhereInput = {
   NOT?: Prisma.TransactionWhereInput | Prisma.TransactionWhereInput[]
   id?: Prisma.StringFilter<"Transaction"> | string
   abonnementId?: Prisma.StringFilter<"Transaction"> | string
-  providerTransactionId?: Prisma.StringFilter<"Transaction"> | string
-  provider?: Prisma.StringFilter<"Transaction"> | string
+  reference?: Prisma.StringFilter<"Transaction"> | string
+  providerTransactionId?: Prisma.StringNullableFilter<"Transaction"> | string | null
+  provider?: Prisma.EnumPrestataireTypeFilter<"Transaction"> | $Enums.PrestataireType
   montant?: Prisma.IntFilter<"Transaction"> | number
   statut?: Prisma.EnumStatutTransactionFilter<"Transaction"> | $Enums.StatutTransaction
   recuLe?: Prisma.DateTimeFilter<"Transaction"> | Date | string
@@ -250,7 +258,8 @@ export type TransactionWhereInput = {
 export type TransactionOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   abonnementId?: Prisma.SortOrder
-  providerTransactionId?: Prisma.SortOrder
+  reference?: Prisma.SortOrder
+  providerTransactionId?: Prisma.SortOrderInput | Prisma.SortOrder
   provider?: Prisma.SortOrder
   montant?: Prisma.SortOrder
   statut?: Prisma.SortOrder
@@ -262,24 +271,27 @@ export type TransactionOrderByWithRelationInput = {
 
 export type TransactionWhereUniqueInput = Prisma.AtLeast<{
   id?: string
-  providerTransactionId?: string
+  reference?: string
+  provider_providerTransactionId?: Prisma.TransactionProviderProviderTransactionIdCompoundUniqueInput
   AND?: Prisma.TransactionWhereInput | Prisma.TransactionWhereInput[]
   OR?: Prisma.TransactionWhereInput[]
   NOT?: Prisma.TransactionWhereInput | Prisma.TransactionWhereInput[]
   abonnementId?: Prisma.StringFilter<"Transaction"> | string
-  provider?: Prisma.StringFilter<"Transaction"> | string
+  providerTransactionId?: Prisma.StringNullableFilter<"Transaction"> | string | null
+  provider?: Prisma.EnumPrestataireTypeFilter<"Transaction"> | $Enums.PrestataireType
   montant?: Prisma.IntFilter<"Transaction"> | number
   statut?: Prisma.EnumStatutTransactionFilter<"Transaction"> | $Enums.StatutTransaction
   recuLe?: Prisma.DateTimeFilter<"Transaction"> | Date | string
   traiteLe?: Prisma.DateTimeNullableFilter<"Transaction"> | Date | string | null
   payloadBrut?: Prisma.JsonNullableFilter<"Transaction">
   abonnement?: Prisma.XOR<Prisma.AbonnementScalarRelationFilter, Prisma.AbonnementWhereInput>
-}, "id" | "providerTransactionId">
+}, "id" | "reference" | "provider_providerTransactionId">
 
 export type TransactionOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   abonnementId?: Prisma.SortOrder
-  providerTransactionId?: Prisma.SortOrder
+  reference?: Prisma.SortOrder
+  providerTransactionId?: Prisma.SortOrderInput | Prisma.SortOrder
   provider?: Prisma.SortOrder
   montant?: Prisma.SortOrder
   statut?: Prisma.SortOrder
@@ -299,8 +311,9 @@ export type TransactionScalarWhereWithAggregatesInput = {
   NOT?: Prisma.TransactionScalarWhereWithAggregatesInput | Prisma.TransactionScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"Transaction"> | string
   abonnementId?: Prisma.StringWithAggregatesFilter<"Transaction"> | string
-  providerTransactionId?: Prisma.StringWithAggregatesFilter<"Transaction"> | string
-  provider?: Prisma.StringWithAggregatesFilter<"Transaction"> | string
+  reference?: Prisma.StringWithAggregatesFilter<"Transaction"> | string
+  providerTransactionId?: Prisma.StringNullableWithAggregatesFilter<"Transaction"> | string | null
+  provider?: Prisma.EnumPrestataireTypeWithAggregatesFilter<"Transaction"> | $Enums.PrestataireType
   montant?: Prisma.IntWithAggregatesFilter<"Transaction"> | number
   statut?: Prisma.EnumStatutTransactionWithAggregatesFilter<"Transaction"> | $Enums.StatutTransaction
   recuLe?: Prisma.DateTimeWithAggregatesFilter<"Transaction"> | Date | string
@@ -310,8 +323,9 @@ export type TransactionScalarWhereWithAggregatesInput = {
 
 export type TransactionCreateInput = {
   id?: string
-  providerTransactionId: string
-  provider?: string
+  reference: string
+  providerTransactionId?: string | null
+  provider?: $Enums.PrestataireType
   montant: number
   statut?: $Enums.StatutTransaction
   recuLe?: Date | string
@@ -323,8 +337,9 @@ export type TransactionCreateInput = {
 export type TransactionUncheckedCreateInput = {
   id?: string
   abonnementId: string
-  providerTransactionId: string
-  provider?: string
+  reference: string
+  providerTransactionId?: string | null
+  provider?: $Enums.PrestataireType
   montant: number
   statut?: $Enums.StatutTransaction
   recuLe?: Date | string
@@ -334,8 +349,9 @@ export type TransactionUncheckedCreateInput = {
 
 export type TransactionUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  providerTransactionId?: Prisma.StringFieldUpdateOperationsInput | string
-  provider?: Prisma.StringFieldUpdateOperationsInput | string
+  reference?: Prisma.StringFieldUpdateOperationsInput | string
+  providerTransactionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  provider?: Prisma.EnumPrestataireTypeFieldUpdateOperationsInput | $Enums.PrestataireType
   montant?: Prisma.IntFieldUpdateOperationsInput | number
   statut?: Prisma.EnumStatutTransactionFieldUpdateOperationsInput | $Enums.StatutTransaction
   recuLe?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -347,8 +363,9 @@ export type TransactionUpdateInput = {
 export type TransactionUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   abonnementId?: Prisma.StringFieldUpdateOperationsInput | string
-  providerTransactionId?: Prisma.StringFieldUpdateOperationsInput | string
-  provider?: Prisma.StringFieldUpdateOperationsInput | string
+  reference?: Prisma.StringFieldUpdateOperationsInput | string
+  providerTransactionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  provider?: Prisma.EnumPrestataireTypeFieldUpdateOperationsInput | $Enums.PrestataireType
   montant?: Prisma.IntFieldUpdateOperationsInput | number
   statut?: Prisma.EnumStatutTransactionFieldUpdateOperationsInput | $Enums.StatutTransaction
   recuLe?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -359,8 +376,9 @@ export type TransactionUncheckedUpdateInput = {
 export type TransactionCreateManyInput = {
   id?: string
   abonnementId: string
-  providerTransactionId: string
-  provider?: string
+  reference: string
+  providerTransactionId?: string | null
+  provider?: $Enums.PrestataireType
   montant: number
   statut?: $Enums.StatutTransaction
   recuLe?: Date | string
@@ -370,8 +388,9 @@ export type TransactionCreateManyInput = {
 
 export type TransactionUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  providerTransactionId?: Prisma.StringFieldUpdateOperationsInput | string
-  provider?: Prisma.StringFieldUpdateOperationsInput | string
+  reference?: Prisma.StringFieldUpdateOperationsInput | string
+  providerTransactionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  provider?: Prisma.EnumPrestataireTypeFieldUpdateOperationsInput | $Enums.PrestataireType
   montant?: Prisma.IntFieldUpdateOperationsInput | number
   statut?: Prisma.EnumStatutTransactionFieldUpdateOperationsInput | $Enums.StatutTransaction
   recuLe?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -382,8 +401,9 @@ export type TransactionUpdateManyMutationInput = {
 export type TransactionUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   abonnementId?: Prisma.StringFieldUpdateOperationsInput | string
-  providerTransactionId?: Prisma.StringFieldUpdateOperationsInput | string
-  provider?: Prisma.StringFieldUpdateOperationsInput | string
+  reference?: Prisma.StringFieldUpdateOperationsInput | string
+  providerTransactionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  provider?: Prisma.EnumPrestataireTypeFieldUpdateOperationsInput | $Enums.PrestataireType
   montant?: Prisma.IntFieldUpdateOperationsInput | number
   statut?: Prisma.EnumStatutTransactionFieldUpdateOperationsInput | $Enums.StatutTransaction
   recuLe?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -401,9 +421,15 @@ export type TransactionOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
 }
 
+export type TransactionProviderProviderTransactionIdCompoundUniqueInput = {
+  provider: $Enums.PrestataireType
+  providerTransactionId: string
+}
+
 export type TransactionCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   abonnementId?: Prisma.SortOrder
+  reference?: Prisma.SortOrder
   providerTransactionId?: Prisma.SortOrder
   provider?: Prisma.SortOrder
   montant?: Prisma.SortOrder
@@ -420,6 +446,7 @@ export type TransactionAvgOrderByAggregateInput = {
 export type TransactionMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   abonnementId?: Prisma.SortOrder
+  reference?: Prisma.SortOrder
   providerTransactionId?: Prisma.SortOrder
   provider?: Prisma.SortOrder
   montant?: Prisma.SortOrder
@@ -431,6 +458,7 @@ export type TransactionMaxOrderByAggregateInput = {
 export type TransactionMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   abonnementId?: Prisma.SortOrder
+  reference?: Prisma.SortOrder
   providerTransactionId?: Prisma.SortOrder
   provider?: Prisma.SortOrder
   montant?: Prisma.SortOrder
@@ -491,8 +519,9 @@ export type EnumStatutTransactionFieldUpdateOperationsInput = {
 
 export type TransactionCreateWithoutAbonnementInput = {
   id?: string
-  providerTransactionId: string
-  provider?: string
+  reference: string
+  providerTransactionId?: string | null
+  provider?: $Enums.PrestataireType
   montant: number
   statut?: $Enums.StatutTransaction
   recuLe?: Date | string
@@ -502,8 +531,9 @@ export type TransactionCreateWithoutAbonnementInput = {
 
 export type TransactionUncheckedCreateWithoutAbonnementInput = {
   id?: string
-  providerTransactionId: string
-  provider?: string
+  reference: string
+  providerTransactionId?: string | null
+  provider?: $Enums.PrestataireType
   montant: number
   statut?: $Enums.StatutTransaction
   recuLe?: Date | string
@@ -543,8 +573,9 @@ export type TransactionScalarWhereInput = {
   NOT?: Prisma.TransactionScalarWhereInput | Prisma.TransactionScalarWhereInput[]
   id?: Prisma.StringFilter<"Transaction"> | string
   abonnementId?: Prisma.StringFilter<"Transaction"> | string
-  providerTransactionId?: Prisma.StringFilter<"Transaction"> | string
-  provider?: Prisma.StringFilter<"Transaction"> | string
+  reference?: Prisma.StringFilter<"Transaction"> | string
+  providerTransactionId?: Prisma.StringNullableFilter<"Transaction"> | string | null
+  provider?: Prisma.EnumPrestataireTypeFilter<"Transaction"> | $Enums.PrestataireType
   montant?: Prisma.IntFilter<"Transaction"> | number
   statut?: Prisma.EnumStatutTransactionFilter<"Transaction"> | $Enums.StatutTransaction
   recuLe?: Prisma.DateTimeFilter<"Transaction"> | Date | string
@@ -554,8 +585,9 @@ export type TransactionScalarWhereInput = {
 
 export type TransactionCreateManyAbonnementInput = {
   id?: string
-  providerTransactionId: string
-  provider?: string
+  reference: string
+  providerTransactionId?: string | null
+  provider?: $Enums.PrestataireType
   montant: number
   statut?: $Enums.StatutTransaction
   recuLe?: Date | string
@@ -565,8 +597,9 @@ export type TransactionCreateManyAbonnementInput = {
 
 export type TransactionUpdateWithoutAbonnementInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  providerTransactionId?: Prisma.StringFieldUpdateOperationsInput | string
-  provider?: Prisma.StringFieldUpdateOperationsInput | string
+  reference?: Prisma.StringFieldUpdateOperationsInput | string
+  providerTransactionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  provider?: Prisma.EnumPrestataireTypeFieldUpdateOperationsInput | $Enums.PrestataireType
   montant?: Prisma.IntFieldUpdateOperationsInput | number
   statut?: Prisma.EnumStatutTransactionFieldUpdateOperationsInput | $Enums.StatutTransaction
   recuLe?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -576,8 +609,9 @@ export type TransactionUpdateWithoutAbonnementInput = {
 
 export type TransactionUncheckedUpdateWithoutAbonnementInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  providerTransactionId?: Prisma.StringFieldUpdateOperationsInput | string
-  provider?: Prisma.StringFieldUpdateOperationsInput | string
+  reference?: Prisma.StringFieldUpdateOperationsInput | string
+  providerTransactionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  provider?: Prisma.EnumPrestataireTypeFieldUpdateOperationsInput | $Enums.PrestataireType
   montant?: Prisma.IntFieldUpdateOperationsInput | number
   statut?: Prisma.EnumStatutTransactionFieldUpdateOperationsInput | $Enums.StatutTransaction
   recuLe?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -587,8 +621,9 @@ export type TransactionUncheckedUpdateWithoutAbonnementInput = {
 
 export type TransactionUncheckedUpdateManyWithoutAbonnementInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  providerTransactionId?: Prisma.StringFieldUpdateOperationsInput | string
-  provider?: Prisma.StringFieldUpdateOperationsInput | string
+  reference?: Prisma.StringFieldUpdateOperationsInput | string
+  providerTransactionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  provider?: Prisma.EnumPrestataireTypeFieldUpdateOperationsInput | $Enums.PrestataireType
   montant?: Prisma.IntFieldUpdateOperationsInput | number
   statut?: Prisma.EnumStatutTransactionFieldUpdateOperationsInput | $Enums.StatutTransaction
   recuLe?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -601,6 +636,7 @@ export type TransactionUncheckedUpdateManyWithoutAbonnementInput = {
 export type TransactionSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   abonnementId?: boolean
+  reference?: boolean
   providerTransactionId?: boolean
   provider?: boolean
   montant?: boolean
@@ -614,6 +650,7 @@ export type TransactionSelect<ExtArgs extends runtime.Types.Extensions.InternalA
 export type TransactionSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   abonnementId?: boolean
+  reference?: boolean
   providerTransactionId?: boolean
   provider?: boolean
   montant?: boolean
@@ -627,6 +664,7 @@ export type TransactionSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
 export type TransactionSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   abonnementId?: boolean
+  reference?: boolean
   providerTransactionId?: boolean
   provider?: boolean
   montant?: boolean
@@ -640,6 +678,7 @@ export type TransactionSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
 export type TransactionSelectScalar = {
   id?: boolean
   abonnementId?: boolean
+  reference?: boolean
   providerTransactionId?: boolean
   provider?: boolean
   montant?: boolean
@@ -649,7 +688,7 @@ export type TransactionSelectScalar = {
   payloadBrut?: boolean
 }
 
-export type TransactionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "abonnementId" | "providerTransactionId" | "provider" | "montant" | "statut" | "recuLe" | "traiteLe" | "payloadBrut", ExtArgs["result"]["transaction"]>
+export type TransactionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "abonnementId" | "reference" | "providerTransactionId" | "provider" | "montant" | "statut" | "recuLe" | "traiteLe" | "payloadBrut", ExtArgs["result"]["transaction"]>
 export type TransactionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   abonnement?: boolean | Prisma.AbonnementDefaultArgs<ExtArgs>
 }
@@ -668,8 +707,9 @@ export type $TransactionPayload<ExtArgs extends runtime.Types.Extensions.Interna
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     abonnementId: string
-    providerTransactionId: string
-    provider: string
+    reference: string
+    providerTransactionId: string | null
+    provider: $Enums.PrestataireType
     montant: number
     statut: $Enums.StatutTransaction
     recuLe: Date
@@ -1101,8 +1141,9 @@ export interface Prisma__TransactionClient<T, Null = never, ExtArgs extends runt
 export interface TransactionFieldRefs {
   readonly id: Prisma.FieldRef<"Transaction", 'String'>
   readonly abonnementId: Prisma.FieldRef<"Transaction", 'String'>
+  readonly reference: Prisma.FieldRef<"Transaction", 'String'>
   readonly providerTransactionId: Prisma.FieldRef<"Transaction", 'String'>
-  readonly provider: Prisma.FieldRef<"Transaction", 'String'>
+  readonly provider: Prisma.FieldRef<"Transaction", 'PrestataireType'>
   readonly montant: Prisma.FieldRef<"Transaction", 'Int'>
   readonly statut: Prisma.FieldRef<"Transaction", 'StatutTransaction'>
   readonly recuLe: Prisma.FieldRef<"Transaction", 'DateTime'>

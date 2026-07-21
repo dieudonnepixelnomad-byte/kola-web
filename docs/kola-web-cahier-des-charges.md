@@ -1,141 +1,192 @@
-# Kola-web — Cahier des charges
+# Kola — Cahier des charges technique · `kola-web` (version SaaS complète)
 
-> Rédigé le 18/07/2026 · Porteur : Gwet Bikoun Dieudonné, Douala — développeur mobile Flutter (10+ ans)
-> Statut : MVP en développement. Premier client = l'auteur lui-même, sur son app Flutter en test fermé sur Google Play.
-> Document unique couvrant le produit `kola-web` (dashboard + API + page de paiement). Le SDK Flutter (`kola_sdk`), consommateur externe de ce système, fait l'objet d'un cahier des charges séparé.
-
----
-
-## 1. Contexte et problème adressé
-
-Un développeur d'application mobile basé au Cameroun (ou dans un pays africain francophone non éligible au compte marchand Google Play) veut vendre un abonnement mensuel dans son app. Deux murs se dressent :
-
-1. **Google refuse le compte marchand** pour la majorité des pays africains francophones (le compte développeur est autorisé, pas l'encaissement).
-2. **Le Mobile Money n'a pas de prélèvement automatique** — chaque renouvellement exige une action manuelle du client, ce qui oblige le développeur à construire lui-même toute une infrastructure de facturation récurrente (état des abonnements, relances, tolérance, réconciliation, mode hors ligne).
-
-Kola répond à une question unique et fiable : **« Est-ce que cet utilisateur a payé ? »** — sans jamais toucher l'argent du développeur, et sans jamais intervenir à l'intérieur de l'app (conformité Google : consommation seule, paiement hors app).
+> Porteur : Gwet Bikoun Dieudonné, Douala · Réécriture « produit fini »
+> Cette version décrit Kola comme un **SaaS multi-tenant complet**, pas comme le MVP mono-tenant.
+> Kola facture ses propres clients **via Kola** : l'auteur est le premier tenant, mais le code ne le sait pas — il est un tenant comme un autre.
+> **Stack : Next.js (App Router) full-stack + Prisma + PostgreSQL (Neon) + abstraction multi-prestataire (Campay, MeSomb, PayDunya, Flutterwave) + SDK Flutter séparé (`kola_sdk`).**
 
 ---
 
-## 2. Acteurs du système
+## 1. Problème, promesse, périmètre
 
-| Acteur | Rôle |
-|---|---|
-| **Éditeur (tenant)** | Développeur qui utilise Kola pour gérer les abonnements de sa propre app. Premier éditeur : Dieudonné lui-même. |
-| **Abonné final** | Utilisateur de l'app de l'éditeur, qui paie l'abonnement. |
-| **Kola (le système)** | Orchestrateur : état des abonnements, relances, ouverture/fermeture d'accès. Ne touche jamais l'argent. |
-| **Provider de paiement** | Campay (par défaut), interchangeable avec MeSomb ou autre agrégateur Mobile Money. Encaisse réellement, reverse directement au compte de l'éditeur. |
+Kola répond à une seule question, de façon fiable, pour n'importe quelle app mobile de n'importe quel éditeur :
+
+> **« Cet utilisateur a-t-il un abonnement actif à cette offre ? »**
+
+Sans jamais détenir l'argent de l'éditeur (non-custodial), sans jamais agir à l'intérieur de l'app mobile côté paiement (conformité Google Play : app en consommation seule, paiement strictement hors app).
+
+Ce qui change par rapport au MVP :
+
+| Axe | MVP | SaaS (ce document) |
+|---|---|---|
+| Tenants | 1, codé en dur (`seed.ts`) | N, inscription libre en self-service |
+| Utilisateurs par tenant | 1 (mot de passe unique) | N, avec rôles (propriétaire / admin / lecture) |
+| Prestataire de paiement | Campay uniquement | Campay, MeSomb, PayDunya, Flutterwave — au choix du tenant, plusieurs configs possibles |
+| Apps par tenant | 1 | N |
+| Offres par app | 1 (schéma en supportait N) | N, gérées en UI |
+| Relances | Manuelles (bouton « copier ») | Automatiques (WhatsApp Cloud API, SMS, email) + templates éditables |
+| Dashboard | Compteurs bruts | Métriques (MRR, churn, encaissé, taux de conversion des relances), export CSV, historique |
+| Facturation de Kola | Hors périmètre | **Dogfooding** : chaque tenant est un abonné de Kola, géré par le moteur Kola |
+| API externe | SDK Flutter seul | SDK + **API REST publique** signée (server-to-server) + **webhooks sortants** |
+
+Principe non négociable inchangé : **le SDK et l'app mobile ne contiennent aucun acte d'achat.** Toute la conversion vit hors app (WhatsApp → page de paiement web).
 
 ---
 
-## 3. Découpage des versions
+## 2. Modèle SaaS et tarification
 
-### MVP — usage interne (1 tenant = l'auteur)
-Objectif : abonnement fonctionnel et fiable sur une app réelle en test fermé. Pas encore de produit vendable à d'autres. **Ce document détaille intégralement le MVP.**
+### 2.1 Entités du modèle
 
-### V1 — produit vendable, multi-tenant
-N'importe quel développeur peut créer un compte, connecter ses propres clés Campay/MeSomb, et gérer ses abonnés en autonomie. *(listé §11, non détaillé ici)*
+- **Tenant** — le compte d'un éditeur (une entreprise / un développeur). Unité de facturation et d'isolation des données.
+- **Utilisateur** — une personne qui se connecte. Appartient à un tenant, porte un rôle.
+- **App** — une application mobile publiée par le tenant. Porte les clés API consommées par le SDK.
+- **Offre** — un plan payant d'une app (`premium`, `premium_plus`…), avec prix, périodicité, tolérance.
+- **ConfigurationPaiement** — un couple (prestataire, identifiants chiffrés) appartenant au tenant. Une offre pointe vers une config (ou hérite de la config par défaut du tenant).
 
-### V2 — robustesse et différenciation
-Le produit tient la charge de plusieurs dizaines de clients, avec plus de finesse. *(listé §11)*
+### 2.2 Tarification de Kola (dogfooding, sans commission)
 
-### V3 — extensions
-Réponses à des besoins qui n'émergeront qu'avec un vrai marché. *(listé §11)*
+L'ADN commercial reste : **forfait, jamais de pourcentage** (« je ne touche pas ton argent, donc je n'ai rien à prélever dessus »). Kola se facture par **paliers d'abonnés actifs**, pas par chiffre d'affaires du tenant :
+
+| Palier | Abonnés actifs | Prix mensuel |
+|---|---|---|
+| Découverte | 0 – 50 | **Gratuit** |
+| Standard | 51 – 500 | **25 000 FCFA** |
+| Croissance | 501 – 2 000 | **60 000 FCFA** |
+| Échelle | 2 001+ | **120 000 FCFA** |
+
+> **Décision à confirmer (business, pas technique).** Le palier gratuit sert d'aimant d'acquisition : l'éditeur intègre, teste, encaisse ses premiers abonnés sans rien payer, puis bascule payant quand Kola lui a déjà rapporté. Le comptage se fait sur le pic d'abonnés `ACTIF`/`TOLERANCE` du mois. Aucune règle ne dépend du montant encaissé par le tenant : le forfait est neutre vis-à-vis de son CA.
+
+Mécaniquement, ce forfait **est lui-même un `Abonnement` Kola** (cf. §8, dogfooding).
 
 ---
 
-## 4. Architecture globale (MVP)
+## 3. Architecture globale
 
-### 4.1 Projets (dépôts Git)
+### 3.1 Dépôts
 
 | Projet | Contenu | Déploiement |
 |---|---|---|
-| **`kola-web`** | Dashboard + API (webhooks, cron, endpoint SDK) + page de paiement — un seul projet Next.js (App Router), objet de ce document | Vercel |
-| **`kola_sdk`** | Package Flutter/Dart, consommé par l'app mobile de l'éditeur — cahier des charges séparé | Repo Git séparé |
+| **`kola-web`** | Dashboard + Auth + API SDK + API publique REST + webhooks entrants/sortants + cron + page de paiement | Vercel |
+| **`kola_sdk`** | Package Flutter/Dart (voir cahier dédié) | Repo Git séparé, publié sur pub.dev en V1 |
 
-### 4.2 Schéma de flux
+### 3.2 Schéma de flux
 
 ```
-┌─────────────────┐        isActive()         ┌──────────────────────┐
-│   App Flutter     │ ─────────────────────────▶ │  kola-web /api/v1/…  │
-│  (kola_sdk)        │ ◀───────────────────────── │  (Next.js API route) │
-└─────────────────┘   {actif: bool, token}     └───────────┬──────────┘
-                                                             │
-                                                             ▼
-                                                     ┌───────────────┐
-                                                     │  PostgreSQL     │
-                                                     │  (Neon, Prisma) │
-                                                     └───────┬───────┘
-                                                             ▲
-                    ┌────────────────────────────────────────┘
-                    │ (lecture/écriture)
-        ┌───────────┴───────────┐          ┌─────────────────────┐
-        │  Cron quotidien         │          │  Webhook Campay        │
-        │  /api/cron/…             │          │  /api/webhooks/campay  │
-        │  (avance les états)      │          │  (paiement reçu)       │
-        └───────────────────────┘          └───────────┬─────────┘
-                                                          │
-                                                          ▼
-                                                  ┌───────────────┐
-                                                  │  Campay API      │
-                                                  │  (sandbox/prod)  │
-                                                  └───────┬───────┘
-                                                          ▲
-                                                          │ paiement
-                                                  ┌───────┴───────┐
-                                                  │  Page de paiement │
-                                                  │  /pay/[lien]        │
-                                                  │  (Next.js, publique) │
-                                                  └────────────────┘
-                                                          ▲
-                                                          │ visite le lien
-                                                  ┌───────┴───────┐
-                                                  │  Abonné final     │
-                                                  └────────────────┘
+┌───────────────┐   isActive()   ┌──────────────────────────┐
+│  App Flutter   │ ─────────────▶ │  /api/v1/subscriptions/…  │
+│  (kola_sdk)     │ ◀───────────── │  (clé publique de l'App)  │
+└───────────────┘  {actif, JWT}   └────────────┬─────────────┘
+                                                │
+        ┌──────────────────────────────────────┼───────────────────────────┐
+        ▼                                        ▼                           ▼
+┌───────────────┐            ┌──────────────────────────┐        ┌────────────────────┐
+│ Cron quotidien │            │  Webhooks entrants          │        │  Dashboard (Next.js)│
+│ /api/cron/…    │            │  /api/webhooks/[prestataire]│        │  Auth multi-user     │
+│ (avance états, │            │  (Campay|MeSomb|PayDunya|…) │        │  Métriques, export   │
+│  réconcilie,   │            └────────────┬─────────────┘        └─────────┬──────────┘
+│  déclenche     │                         │                                │
+│  relances)     │                         ▼                                ▼
+└───────┬───────┘                 ┌───────────────┐              ┌──────────────────┐
+        │                          │  PostgreSQL     │◀────────────│  API publique REST │
+        ▼                          │  (Neon, Prisma) │              │  /api/public/v1/…  │
+┌───────────────┐                 └───────┬───────┘              └──────────────────┘
+│ Canaux relance │                         │
+│ WhatsApp/SMS/  │                         ▼
+│ email          │                 ┌────────────────────┐   paiement   ┌──────────────┐
+└───────────────┘                 │  Abstraction paiement│◀─────────────│ Page /pay/[…] │
+                                    │  (adapter par presta) │              │ (publique)     │
+                                    └──────────┬──────────┘              └──────┬───────┘
+                                               ▼                                 ▲
+                                    ┌────────────────────┐                       │
+                                    │ Campay / MeSomb /    │                       │
+                                    │ PayDunya / Flutterwave│──── prompt USSD ─────┘
+                                    └────────────────────┘        (abonné final)
 ```
 
-### 4.3 Arborescence du projet `kola-web`
+### 3.3 Arborescence `kola-web`
 
 ```
 kola-web/
 ├── prisma/
-│   └── schema.prisma
+│   ├── schema.prisma
+│   └── seed.ts                        # crée le tenant système "Kola" + son offre plateforme
 ├── app/
-│   ├── dashboard/                    # UI protégée (Better Auth, mono-tenant MVP)
-│   │   ├── layout.tsx
-│   │   ├── page.tsx                  # vue d'ensemble (compteurs)
-│   │   ├── abonnes/page.tsx          # liste des abonnés
-│   │   └── login/page.tsx
+│   ├── (marketing)/                   # landing publique
+│   │   └── page.tsx
+│   ├── (auth)/
+│   │   ├── inscription/page.tsx
+│   │   ├── connexion/page.tsx
+│   │   ├── mot-de-passe-oublie/page.tsx
+│   │   └── invitation/[token]/page.tsx
+│   ├── dashboard/                     # protégé (session), scoping tenant systématique
+│   │   ├── layout.tsx                 # garde d'auth + résolution du tenant courant
+│   │   ├── page.tsx                   # vue d'ensemble : MRR, encaissé, à relancer…
+│   │   ├── apps/
+│   │   │   ├── page.tsx
+│   │   │   └── [appId]/
+│   │   │       ├── page.tsx           # offres + clés API + intégration SDK
+│   │   │       └── offres/[offreId]/page.tsx
+│   │   ├── abonnes/page.tsx           # liste filtrable + recherche + export
+│   │   ├── paiements/page.tsx         # historique des transactions
+│   │   ├── relances/page.tsx          # templates + journal des envois
+│   │   ├── parametres/
+│   │   │   ├── prestataires/page.tsx  # configs de paiement (Campay, MeSomb…)
+│   │   │   ├── equipe/page.tsx        # membres + rôles + invitations
+│   │   │   ├── facturation/page.tsx   # abonnement Kola du tenant (dogfooding)
+│   │   │   └── webhooks/page.tsx      # webhooks sortants
+│   │   └── ...
 │   ├── pay/
-│   │   └── [lienPaiement]/page.tsx   # page de paiement publique
+│   │   └── [lienPaiement]/page.tsx    # page de paiement publique (Server Component)
 │   └── api/
 │       ├── v1/
-│       │   └── subscriptions/
-│       │       └── status/route.ts   # appelé par le SDK Flutter
+│       │   └── subscriptions/status/route.ts     # consommé par le SDK Flutter
+│       ├── public/v1/                            # API REST server-to-server (clé secrète)
+│       │   ├── subscribers/route.ts
+│       │   ├── subscriptions/route.ts
+│       │   └── offers/route.ts
 │       ├── webhooks/
-│       │   └── campay/route.ts       # réception paiement
+│       │   ├── campay/route.ts
+│       │   ├── mesomb/route.ts
+│       │   ├── paydunya/route.ts
+│       │   └── flutterwave/route.ts
 │       ├── cron/
 │       │   └── avancer-abonnements/route.ts
 │       ├── pay/
-│       │   └── initiate/route.ts     # déclenche la demande Campay
-│       └── admin/
-│           ├── abonnes/route.ts      # lecture pour le dashboard
-│           └── auth/[...all]/route.ts  # Better Auth
+│       │   ├── initiate/route.ts
+│       │   └── status/route.ts                   # polling léger de la page de paiement
+│       ├── auth/                                  # inscription, connexion, sessions
+│       └── admin/                                 # routes internes du dashboard
 ├── lib/
 │   ├── prisma.ts
-│   ├── auth.ts                       # config Better Auth
-│   ├── campay.ts                     # client API Campay
-│   ├── jwt.ts                        # signature RS256 / vérif token SDK
-│   └── stateMachine.ts               # logique des transitions d'état
-├── vercel.json                       # config du cron
+│   ├── auth/                          # sessions, hash argon2, garde de rôle
+│   ├── tenant.ts                      # résolution + isolation du tenant courant
+│   ├── crypto.ts                      # AES-256-GCM pour secrets prestataires
+│   ├── jwt.ts                         # signature RS256 des tokens SDK
+│   ├── paiement/                      # ABSTRACTION PRESTATAIRE (cœur du SaaS)
+│   │   ├── types.ts                   # interface PrestatairePaiement
+│   │   ├── factory.ts                 # getPrestataire(config)
+│   │   ├── campay.ts
+│   │   ├── mesomb.ts
+│   │   ├── paydunya.ts
+│   │   └── flutterwave.ts
+│   ├── relances/                      # WhatsApp Cloud API, SMS, email + templating
+│   │   ├── types.ts
+│   │   ├── whatsapp.ts
+│   │   ├── sms.ts
+│   │   ├── email.ts
+│   │   └── template.ts
+│   ├── stateMachine.ts               # transitions d'état des abonnements
+│   ├── metriques.ts                  # MRR, churn, encaissé, conversion relances
+│   └── webhooksSortants.ts           # signature HMAC + livraison + retry
+├── vercel.json                       # crons
 └── .env
 ```
 
-**Discipline de code** : les pages `app/dashboard/...` ne lisent jamais la base de données directement — elles appellent des routes `app/api/...`, même en mono-projet. C'est ce qui permettra, plus tard, d'extraire l'API vers un backend séparé sans toucher au dashboard.
+**Discipline (rappel CLAUDE.md)** : les pages `app/dashboard/**` ne lisent jamais la base directement — elles passent par `app/api/admin/**`. Cela garde la porte ouverte à une extraction ultérieure de l'API vers un backend séparé (Laravel) sans toucher au dashboard.
 
 ---
 
-## 5. Schéma de données (Prisma)
+## 4. Schéma de données (Prisma) — SaaS complet
 
 ```prisma
 // prisma/schema.prisma
@@ -149,71 +200,174 @@ generator client {
   provider = "prisma-client-js"
 }
 
-// ─────────────────────────────────────────────
-// Un seul tenant existera en base au MVP (seed manuel).
-// Le modèle existe déjà pour que le passage en V1 (multi-tenant + Better Auth
-// "organizations") ne demande aucune migration de schéma.
-// ─────────────────────────────────────────────
+// ─────────────────────────── Comptes & identités ───────────────────────────
+
 model Tenant {
   id                String   @id @default(cuid())
   nom               String
-  email             String   @unique
-  cleApiPublique    String   @unique @default(cuid())
-  cleApiPrivee      String   @unique @default(cuid())
+  slug              String   @unique              // sous-domaine / URL de paiement
+  estSysteme        Boolean  @default(false)      // true uniquement pour le tenant "Kola"
 
-  // Config provider de paiement (chiffré au niveau applicatif avant écriture)
-  campayAppId       String?
-  campayAppSecret   String?  // stocké chiffré (voir §8 Sécurité)
+  // Dogfooding : statut de l'abonnement du tenant À Kola (dénormalisé, source
+  // de vérité = un Abonnement dans le tenant système). Sert à suspendre l'accès.
+  statutPlateforme  StatutAbonnement @default(ACTIF)
 
+  utilisateurs      Utilisateur[]
+  invitations       Invitation[]
   apps              App[]
+  configurations    ConfigurationPaiement[]
+  modelesRelance    ModeleRelance[]
+  webhooksSortants  WebhookSortant[]
+  journalAudit      JournalAudit[]
+
   createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 }
 
+enum RoleUtilisateur {
+  PROPRIETAIRE   // tout, y compris facturation et suppression du tenant
+  ADMIN          // tout sauf facturation/suppression
+  LECTURE        // consultation seule (dashboard en read-only)
+}
+
+model Utilisateur {
+  id             String   @id @default(cuid())
+  tenantId       String
+  tenant         Tenant   @relation(fields: [tenantId], references: [id])
+  email          String   @unique
+  motDePasseHash String                              // argon2id
+  nom            String
+  role           RoleUtilisateur @default(PROPRIETAIRE)
+  emailVerifieLe DateTime?
+
+  sessions       Session[]
+
+  createdAt      DateTime @default(now())
+
+  @@index([tenantId])
+}
+
+model Session {
+  id            String   @id @default(cuid())
+  utilisateurId String
+  utilisateur   Utilisateur @relation(fields: [utilisateurId], references: [id])
+  tokenHash     String   @unique                    // le cookie contient le token en clair, la base son hash
+  expiresAt     DateTime
+  createdAt     DateTime @default(now())
+}
+
+model Invitation {
+  id         String   @id @default(cuid())
+  tenantId   String
+  tenant     Tenant   @relation(fields: [tenantId], references: [id])
+  email      String
+  role       RoleUtilisateur @default(LECTURE)
+  token      String   @unique @default(cuid())
+  accepteeLe DateTime?
+  expireLe   DateTime
+  createdAt  DateTime @default(now())
+
+  @@unique([tenantId, email])
+}
+
+// ─────────────────────────── Apps & offres ───────────────────────────
+
 model App {
-  id          String   @id @default(cuid())
-  tenantId    String
-  tenant      Tenant   @relation(fields: [tenantId], references: [id])
-  nom         String
-  plateforme  String   @default("android") // android | ios (V2)
+  id             String   @id @default(cuid())
+  tenantId       String
+  tenant         Tenant   @relation(fields: [tenantId], references: [id])
+  nom            String
+  plateforme     String   @default("android")       // android | ios (quand levé)
 
-  offres      Offre[]
+  // Clé publique : consommée par le SDK Flutter (init). Publiable, non secrète.
+  cleApiPublique String   @unique @default(cuid())
+  // Clé secrète : server-to-server (API publique REST). Stockée hashée.
+  cleApiSecreteHash String @unique
+  cleApiSecreteIndice String                         // 6 derniers caractères, pour l'affichage "sk_…a3f9"
 
-  createdAt   DateTime @default(now())
+  offres         Offre[]
+
+  createdAt      DateTime @default(now())
+
+  @@index([tenantId])
 }
 
 model Offre {
-  id                  String   @id @default(cuid())
-  appId               String
-  app                 App      @relation(fields: [appId], references: [id])
-  nom                 String   // ex: "Premium"
-  slug                String   // ex: "premium" — utilisé par le SDK dans isActive('premium')
-  prix                Int      // en FCFA, entier (pas de centimes)
-  devise              String   @default("XAF")
-  periodiciteJours    Int      @default(30)
-  toleranceJours      Int      @default(3)
+  id                 String   @id @default(cuid())
+  appId              String
+  app                App      @relation(fields: [appId], references: [id])
+  nom                String
+  slug               String                          // isActive('premium')
+  prix               Int                             // FCFA entier, pas de centimes
+  devise             String   @default("XAF")
+  periodiciteJours   Int      @default(30)
+  toleranceJours     Int      @default(3)
+  actif              Boolean  @default(true)
 
-  abonnements         Abonnement[]
+  // Prestataire utilisé pour encaisser cette offre. Null → config par défaut du tenant.
+  configurationId    String?
+  configuration      ConfigurationPaiement? @relation(fields: [configurationId], references: [id])
 
-  createdAt           DateTime @default(now())
+  abonnements        Abonnement[]
+
+  createdAt          DateTime @default(now())
 
   @@unique([appId, slug])
 }
 
+// ─────────────────────────── Prestataires de paiement ───────────────────────────
+
+enum PrestataireType {
+  CAMPAY
+  MESOMB
+  PAYDUNYA
+  FLUTTERWAVE
+}
+
+model ConfigurationPaiement {
+  id            String          @id @default(cuid())
+  tenantId      String
+  tenant        Tenant          @relation(fields: [tenantId], references: [id])
+  prestataire   PrestataireType
+  nom           String                              // libellé libre : "Campay - compte principal"
+
+  // Identifiants chiffrés (AES-256-GCM) — forme variable selon le prestataire :
+  //  Campay      : { appId, appSecret }
+  //  MeSomb      : { applicationKey, accessKey, secretKey }
+  //  PayDunya    : { masterKey, privateKey, token }
+  //  Flutterwave : { secretKey, encryptionKey }
+  identifiantsChiffres String                       // JSON chiffré, jamais en clair en base
+  identifiantsIv       String                       // IV du chiffrement
+  identifiantsTag      String                       // tag d'authentification GCM
+
+  actif         Boolean         @default(true)
+  parDefaut     Boolean         @default(false)     // au plus une config parDefaut par tenant (garde applicative)
+  verifieLe     DateTime?                            // dernière validation réussie (ping sandbox/prod)
+
+  offres        Offre[]
+
+  createdAt     DateTime        @default(now())
+
+  @@index([tenantId])
+}
+
+// ─────────────────────────── Abonnés & abonnements ───────────────────────────
+
 model Abonne {
-  id                  String   @id @default(cuid())
-  tenantId            String
-  identifiantExterne  String   // DÉCISION MVP : numéro de téléphone normalisé (E.164, ex. +237671960300).
-                                // Pas un UID généré côté app — le téléphone est stable indépendamment
-                                // de toute désinstallation/réinstallation, et sert aussi de canal
-                                // de relance WhatsApp. Voir §7 pour le parcours complet.
-  telephone           String?
-  email               String?
+  id                 String   @id @default(cuid())
+  tenantId           String
+  // DÉCISION conservée : identifiant = téléphone normalisé E.164 (stable, sert de canal de relance).
+  identifiantExterne String
+  telephone          String?
+  email              String?
+  nom                String?
 
-  abonnements         Abonnement[]
+  abonnements        Abonnement[]
 
-  createdAt           DateTime @default(now())
+  createdAt          DateTime @default(now())
 
   @@unique([tenantId, identifiantExterne])
+  @@index([tenantId])
 }
 
 enum StatutAbonnement {
@@ -224,30 +378,26 @@ enum StatutAbonnement {
 }
 
 model Abonnement {
-  id                String            @id @default(cuid())
-  abonneId          String
-  abonne            Abonne            @relation(fields: [abonneId], references: [id])
-  offreId           String
-  offre             Offre             @relation(fields: [offreId], references: [id])
+  id             String           @id @default(cuid())
+  abonneId       String
+  abonne         Abonne           @relation(fields: [abonneId], references: [id])
+  offreId        String
+  offre          Offre            @relation(fields: [offreId], references: [id])
 
-  statut            StatutAbonnement  @default(COUPE)
-  dateEcheance      DateTime?
-  dateActivation    DateTime?
+  statut         StatutAbonnement @default(COUPE)
+  dateEcheance   DateTime?
+  dateActivation DateTime?
 
-  lienPaiement      String            @unique @default(cuid()) // utilisé dans /pay/[lienPaiement]
-                                                                  // DÉCISION MVP : lien PERMANENT — généré une
-                                                                  // fois à la création de l'Abonnement, réutilisé
-                                                                  // pour tous les renouvellements futurs. Pas de
-                                                                  // régénération à chaque cycle (simplicité ;
-                                                                  // aucun risque identifié, cf. §7).
+  lienPaiement   String   @unique @default(cuid())   // DÉCISION conservée : lien permanent, réutilisé à chaque cycle
 
-  transactions      Transaction[]
-  logsRelance       LogRelance[]
+  transactions   Transaction[]
+  logsRelance    LogRelance[]
 
-  createdAt         DateTime          @default(now())
-  updatedAt         DateTime          @updatedAt
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
 
   @@index([statut, dateEcheance])
+  @@index([abonneId])
 }
 
 enum StatutTransaction {
@@ -257,340 +407,506 @@ enum StatutTransaction {
 }
 
 model Transaction {
-  id                        String            @id @default(cuid())
-  abonnementId               String
-  abonnement                  Abonnement        @relation(fields: [abonnementId], references: [id])
+  id                    String            @id @default(cuid())
+  abonnementId          String
+  abonnement            Abonnement        @relation(fields: [abonnementId], references: [id])
 
-  providerTransactionId       String            @unique // idempotence : clé d'unicité Campay
-  provider                    String            @default("campay")
-  montant                     Int
-  statut                      StatutTransaction @default(EN_ATTENTE)
+  // Notre référence interne, envoyée au prestataire et ré-émise dans son webhook.
+  // Sert à retrouver la transaction ET le tenant AVANT vérification de signature.
+  reference             String            @unique @default(cuid())
 
-  recuLe                      DateTime          @default(now())
-  traiteLe                    DateTime?
+  provider              PrestataireType
+  providerTransactionId String?           // renseigné quand le prestataire le renvoie
+  montant               Int
+  statut                StatutTransaction @default(EN_ATTENTE)
 
-  payloadBrut                 Json?             // trace brute du webhook, utile en debug
+  recuLe                DateTime          @default(now())
+  traiteLe              DateTime?
+  payloadBrut           Json?
+
+  // Idempotence : un providerTransactionId ne peut activer qu'une fois.
+  @@unique([provider, providerTransactionId])
+  @@index([statut, recuLe])
 }
+
+// ─────────────────────────── Relances ───────────────────────────
 
 enum TypeRelance {
   J_MOINS_3
+  J_ECHEANCE
   J_PLUS_7
 }
 
+enum CanalRelance {
+  WHATSAPP
+  SMS
+  EMAIL
+}
+
+model ModeleRelance {
+  id        String       @id @default(cuid())
+  tenantId  String
+  tenant    Tenant       @relation(fields: [tenantId], references: [id])
+  type      TypeRelance
+  canal     CanalRelance @default(WHATSAPP)
+  // Contenu avec variables : {nom} {offre} {prix} {jours} {lien}
+  contenu   String
+  actif     Boolean      @default(true)
+
+  createdAt DateTime     @default(now())
+
+  @@unique([tenantId, type, canal])
+}
+
 model LogRelance {
-  id              String       @id @default(cuid())
-  abonnementId    String
-  abonnement      Abonnement   @relation(fields: [abonnementId], references: [id])
-  type            TypeRelance
-  envoyeLe        DateTime     @default(now())
-  canal           String       @default("whatsapp_manuel") // MVP : déclenché mais envoyé à la main
+  id           String       @id @default(cuid())
+  abonnementId String
+  abonnement   Abonnement   @relation(fields: [abonnementId], references: [id])
+  type         TypeRelance
+  canal        CanalRelance
+  statutEnvoi  String       @default("ENVOYE")     // ENVOYE | ECHEC | IGNORE
+  envoyeLe     DateTime     @default(now())
+  erreur       String?
+
+  @@index([abonnementId, type])
+}
+
+// ─────────────────────────── Webhooks sortants ───────────────────────────
+
+model WebhookSortant {
+  id            String   @id @default(cuid())
+  tenantId      String
+  tenant        Tenant   @relation(fields: [tenantId], references: [id])
+  url           String
+  secret        String                              // clé de signature HMAC (chiffrée au repos)
+  evenements    String[]                            // ["abonnement.active", "abonnement.coupe", …]
+  actif         Boolean  @default(true)
+
+  livraisons    LivraisonWebhook[]
+  createdAt     DateTime @default(now())
+}
+
+model LivraisonWebhook {
+  id               String   @id @default(cuid())
+  webhookSortantId String
+  webhookSortant   WebhookSortant @relation(fields: [webhookSortantId], references: [id])
+  evenement        String
+  payload          Json
+  statutHttp       Int?
+  tentatives       Int      @default(0)
+  livreLe          DateTime?
+  prochainEssai    DateTime?
+  createdAt        DateTime @default(now())
+
+  @@index([prochainEssai])
+}
+
+// ─────────────────────────── Audit ───────────────────────────
+
+model JournalAudit {
+  id            String   @id @default(cuid())
+  tenantId      String
+  tenant        Tenant   @relation(fields: [tenantId], references: [id])
+  utilisateurId String?
+  action        String                              // "config.cree", "offre.modifiee", "membre.invite"…
+  cible         String?                             // id de l'entité concernée
+  meta          Json?
+  ip            String?
+  createdAt     DateTime @default(now())
+
+  @@index([tenantId, createdAt])
 }
 ```
 
-**Notes de conception**
+**Décisions de schéma notables**
 
-- `Offre.slug` est ce que le SDK Flutter passe à `isActive('premium')` — permet plusieurs offres par app dès le MVP sans migration future.
-- `Transaction.providerTransactionId` porte une contrainte `@unique` : c'est la ligne de défense principale contre le double comptage d'un webhook envoyé deux fois.
-- `Abonnement.lienPaiement` est un identifiant opaque et unique utilisé dans l'URL publique `/pay/[lienPaiement]` — évite d'exposer les IDs internes ou les numéros de téléphone dans l'URL.
-- Le modèle `Tenant` existe dès le MVP mais n'aura qu'**une seule ligne, créée manuellement (`seed.ts`)** — aucune UI d'inscription au MVP.
+- **Isolation multi-tenant** : chaque entité racine porte `tenantId`. Toute requête serveur passe par un helper `avecTenant(tenantId)` (cf. §5.3) — aucune requête ne s'exécute sans scope tenant. C'est la défense principale contre la fuite de données entre éditeurs.
+- **Idempotence renforcée** : `@@unique([provider, providerTransactionId])` sur `Transaction` (au lieu d'un simple `@unique`), parce qu'en multi-prestataire deux providers différents pourraient théoriquement émettre le même identifiant. La clé d'unicité est donc le couple.
+- **`Transaction.reference`** : notre propre identifiant, généré avant l'appel au prestataire. Il voyage jusqu'au webhook et permet de retrouver le tenant **avant** de vérifier la signature (indispensable car la clé de vérification est propre au tenant).
+- **Secrets prestataires** : jamais en clair. Trois colonnes (`identifiantsChiffres`, `identifiantsIv`, `identifiantsTag`) pour AES-256-GCM. La clé maîtresse vit dans l'environnement Vercel (ou un KMS en V2), jamais en base.
+- **Clé API secrète de l'App** : stockée **hashée** (comme un mot de passe). On ne l'affiche qu'une fois à la création ; ensuite seul l'indice `sk_…a3f9` est montré.
 
 ---
 
-## 6. Fonctionnalités détaillées — MVP
+## 5. Authentification, rôles, isolation multi-tenant
 
-### 6.1 Endpoint SDK : vérification du statut d'abonnement
+### 5.1 Inscription et sessions
 
-**Description** : c'est le seul point de contact entre `kola-web` et l'app mobile de l'éditeur. Répond en une requête à la question centrale du produit.
+- **Inscription** (`/inscription`) : email, mot de passe, nom, nom du premier tenant + première app. Crée `Tenant` + `Utilisateur(PROPRIETAIRE)` + `App`. Envoie un email de vérification.
+- **Hash** : `argon2id` (paramètres mémoire/itérations raisonnables pour un serveur serverless).
+- **Sessions** : cookie `httpOnly`, `Secure`, `SameSite=Lax`. Le cookie porte un token aléatoire ; la base ne stocke que son hash (`Session.tokenHash`) → révocable côté serveur, illisible même en cas de fuite de base.
+- **Alternative acceptable** : Auth.js (NextAuth v5) avec adaptateur Prisma. Retenu ici : implémentation maison légère, pour garder les noms de domaine 100 % français et éviter le lock-in. À trancher au début de l'implémentation, pas après.
 
-**Route** : `GET /api/v1/subscriptions/status`
+### 5.2 Rôles
 
-**Paramètres (query string)**
+| Rôle | Peut | Ne peut pas |
+|---|---|---|
+| `PROPRIETAIRE` | Tout : offres, prestataires, équipe, **facturation Kola**, suppression du tenant | — |
+| `ADMIN` | Offres, prestataires, abonnés, relances, webhooks | Facturation Kola, suppression du tenant, retrait du propriétaire |
+| `LECTURE` | Consulter dashboard, abonnés, métriques, export | Toute écriture |
 
-| Paramètre | Description |
-|---|---|
-| `cle` | Clé API publique du tenant (`Tenant.cleApiPublique`) |
-| `identifiantExterne` | Numéro de téléphone (E.164) de l'utilisateur final côté app cliente |
-| `offre` | Slug de l'offre (ex : `premium`) |
+Gardes : un helper `exigerRole(min)` protège chaque route `/api/admin/**` et chaque server action.
 
-**Réponse (200)**
+### 5.3 Isolation : la règle d'or
 
-```json
-{
-  "actif": true,
-  "statut": "ACTIF",
-  "dateEcheance": "2026-08-18T00:00:00.000Z",
-  "token": "eyJhbGciOi..."   // JWT signé RS256, durée de vie 72h, à mettre en cache local par le SDK
+Toute lecture/écriture métier passe par un **contexte tenant résolu depuis la session** :
+
+```typescript
+// lib/tenant.ts
+export async function contexteTenant() {
+  const session = await lireSession();          // 401 si absente
+  const utilisateur = await prisma.utilisateur.findUniqueOrThrow({
+    where: { id: session.utilisateurId },
+    include: { tenant: true },
+  });
+  return { tenantId: utilisateur.tenantId, role: utilisateur.role };
 }
 ```
 
-**Comportement**
+**Aucune** requête métier ne s'exécute sans `where: { tenantId }`. Revue de code : toute requête Prisma dans `app/api/admin/**` sans filtre `tenantId` est un bug de sécurité, pas un oubli mineur.
 
-1. Résout le `Tenant` via `cle`. Si invalide → 401.
-2. Cherche ou crée l'`Abonne` correspondant à `identifiantExterne` pour ce tenant (création automatique au premier appel — pas de flux d'inscription séparé). C'est aussi cette recherche qui permet la **restauration d'accès après réinstallation** (cf. §7) : un utilisateur qui resaisit son numéro retombe sur le même `Abonne`.
-3. Cherche l'`Abonnement` actif le plus récent pour cette offre.
-4. `actif = true` si `statut` est `ACTIF` ou `TOLERANCE` (l'accès reste ouvert en tolérance, cf. §6.3).
-5. Génère un JWT **signé en RS256** (clé privée jamais exposée, cf. §8) — payload minimal : `identifiantExterne`, `offreSlug`, `tenantId`, `actif`, `dateEcheance`, `iat`, `exp = iat + 72h`. C'est ce token que le SDK garde en cache pour répondre localement en cas de coupure réseau, en le vérifiant avec la clé publique embarquée dans le package.
+### 5.4 Invitations d'équipe
 
-**Cas d'usage couverts** :
-- *US-01* — En tant qu'éditeur, je veux appeler une seule fonction pour savoir si mon utilisateur a un accès premium actif, afin de ne rien construire moi-même côté logique d'abonnement.
-- *US-02* — En tant qu'utilisateur final hors ligne, je veux garder mon accès premium acquis (jusqu'à 72h), afin de ne pas être pénalisé par une coupure réseau indépendante de ma volonté.
+`/parametres/equipe` : le propriétaire/admin invite un email + rôle → crée une `Invitation` (token, expiration 7 j) → email avec lien `/invitation/[token]`. À l'acceptation, l'invité crée son `Utilisateur` rattaché au **même tenant**.
+
+**Cas d'usage** : US-20 (inscription éditeur), US-21 (invitation membre), US-22 (rôles).
 
 ---
 
-### 6.2 Page et endpoint de paiement
+## 6. Abstraction des prestataires de paiement (cœur du SaaS)
 
-**Description** : page web publique, hébergée hors de l'app mobile. L'abonné final y arrive via un lien (WhatsApp), saisit son numéro Mobile Money, valide sur son téléphone.
+C'est la différence structurelle avec le MVP. Le reste du système ne connaît **jamais** un prestataire concret : il parle à une interface.
 
-**Page publique** : `GET /pay/[lienPaiement]` (Next.js Server Component)
-- Résout l'`Abonnement` via `lienPaiement` (posséder le lien fait foi — aucun login nécessaire, cf. §7).
-- Affiche : nom de l'offre, prix, formulaire (numéro pré-rempli si connu, choix MTN MoMo / Orange Money).
-- Bouton "Payer" → appelle `POST /api/pay/initiate`.
+### 6.1 L'interface
 
-**Route** : `POST /api/pay/initiate`
+```typescript
+// lib/paiement/types.ts
 
-**Payload**
-```json
-{ "lienPaiement": "clx1a2b3...", "telephone": "+237671960300", "operateur": "mtn" }
-```
+export type Operateur = "MTN" | "ORANGE";
+export type StatutPaiementProvider = "EN_ATTENTE" | "REUSSIE" | "ECHOUEE";
 
-**Comportement**
-1. Résout l'`Abonnement` via `lienPaiement`.
-2. Appelle l'API Campay (`lib/campay.ts`) pour initier une demande de paiement (mode sandbox `demo.campay.net` en développement, montants ≤ 100 FCFA).
-3. Crée une `Transaction` en statut `EN_ATTENTE` avec le `providerTransactionId` retourné par Campay.
-4. Répond au frontend avec un statut "en attente de confirmation sur le téléphone".
+export interface RequeteWebhook {
+  headers: Record<string, string>;
+  corps: unknown;        // JSON brut reçu
+  corpsBrut: string;     // corps textuel exact (pour vérif de signature HMAC)
+}
 
-**Cas d'usage couverts** :
-- *US-04* — En tant qu'abonné final, je veux payer mon abonnement en 2 taps sur mon téléphone, afin de renouveler rapidement sans quitter WhatsApp.
-- *US-05* — En tant qu'éditeur, je veux que le lien de paiement soit déjà pré-rempli avec le numéro de mon abonné, afin de réduire la friction de renouvellement.
-- *US-06* — En tant qu'éditeur, je veux tester l'intégralité du parcours de paiement avec de l'argent fictif, afin de valider mon intégration avant la mise en production.
+export interface PrestatairePaiement {
+  readonly type: PrestataireType;
 
----
+  /** Déclenche le prompt de paiement sur le téléphone de l'abonné. */
+  initier(params: {
+    montant: number;
+    devise: string;
+    telephone: string;        // E.164
+    operateur: Operateur;
+    reference: string;        // notre Transaction.reference — voyage jusqu'au webhook
+    description?: string;
+  }): Promise<{
+    providerTransactionId: string;
+    statut: StatutPaiementProvider;
+  }>;
 
-### 6.3 Webhook Campay et moteur (state machine)
+  /** Réconciliation active : interroge le prestataire sur l'état réel. */
+  verifier(providerTransactionId: string): Promise<{
+    statut: StatutPaiementProvider;
+    montant?: number;
+  }>;
 
-**Description** : c'est le cœur du produit — la réception des paiements en temps réel, et l'avancement quotidien de chaque abonnement dans le temps.
+  /** Vrai si le webhook est authentique (signature/HMAC/IP selon le prestataire). */
+  verifierWebhook(req: RequeteWebhook, config: IdentifiantsDechiffres): Promise<boolean>;
 
-#### 6.3.1 Webhook — réception d'un paiement
+  /** Normalise un payload hétérogène en un événement interne unique. */
+  parserWebhook(req: RequeteWebhook): {
+    reference: string;                 // permet de retrouver notre Transaction + tenant
+    providerTransactionId: string;
+    statut: StatutPaiementProvider;
+    montant?: number;
+  };
 
-**Route** : `POST /api/webhooks/campay`
-
-1. Vérifie la signature/l'authenticité de la requête (mécanisme fourni par Campay).
-2. Recherche la `Transaction` via `providerTransactionId` reçu dans le payload.
-   - **Si elle n'existe pas déjà en statut `REUSSIE`** → traite normalement (étape 3).
-   - **Si elle existe déjà en statut `REUSSIE`** → **ignore silencieusement** (réponse 200 sans effet de bord). Protection anti-double-webhook.
-3. Marque la `Transaction` en `REUSSIE`, `traiteLe = now()`.
-4. Recalcule la nouvelle `dateEcheance` de l'`Abonnement` :
-   - Si `dateEcheance` actuelle est dans le futur (paiement anticipé) → `nouvelle = dateEcheance_actuelle + periodiciteJours`
-   - Sinon (paiement en retard ou premier paiement) → `nouvelle = now() + periodiciteJours`
-5. Passe `Abonnement.statut = ACTIF`.
-
-#### 6.3.2 Cron quotidien — avancement des états
-
-**Route** : `GET /api/cron/avancer-abonnements` (appelée par Vercel Cron, protégée par `Authorization: Bearer $CRON_SECRET`)
-
-**Configuration `vercel.json`**
-```json
-{
-  "crons": [
-    { "path": "/api/cron/avancer-abonnements", "schedule": "0 3 * * *" }
-  ]
+  /** Ping léger utilisé à la config pour valider les clés (sandbox ou prod). */
+  tester(): Promise<boolean>;
 }
 ```
 
-**Logique (`lib/stateMachine.ts`)** — pour chaque `Abonnement` dont `statut != EXPIRE` :
+### 6.2 La factory
+
+```typescript
+// lib/paiement/factory.ts
+export function getPrestataire(config: ConfigurationPaiement): PrestatairePaiement {
+  const ids = dechiffrer(config);   // lib/crypto.ts, AES-256-GCM
+  switch (config.prestataire) {
+    case "CAMPAY":      return new CampayAdapter(ids);
+    case "MESOMB":      return new MesombAdapter(ids);
+    case "PAYDUNYA":    return new PayDunyaAdapter(ids);
+    case "FLUTTERWAVE": return new FlutterwaveAdapter(ids);
+  }
+}
+```
+
+### 6.3 Résolution de la config pour une offre
+
+`configPourOffre(offre)` → `offre.configuration` si défini, sinon la `ConfigurationPaiement` `parDefaut` du tenant. Erreur explicite (et message dashboard) si aucune config n'est active — un tenant ne peut pas mettre une offre « en vente » sans prestataire branché.
+
+### 6.4 Ce que chaque adaptateur encapsule
+
+| Prestataire | Init | Vérif signature webhook | Particularité |
+|---|---|---|---|
+| **Campay** | `POST /collect` (sandbox `demo.campay.net`) | Clé partagée / token dans l'entête | Renvoie `reference` si on la passe en `external_reference` |
+| **MeSomb** | SDK/HTTP `payment/collect` | Signature HMAC sur le corps | Trois clés (application/access/secret) |
+| **PayDunya** | Invoice/collect API | `PAYDUNYA-*` headers + master key | Modèle « facture » à mapper sur notre `Transaction` |
+| **Flutterwave** | `charges?type=mobile_money_franco` | `verif-hash` (secret hash configuré) | Support multi-pays natif (utile V2 multi-devise) |
+
+> **Décision** : au moins **Campay + MeSomb** livrés dès la V1 (les deux du marché camerounais). PayDunya et Flutterwave suivent, mais l'interface est figée dès maintenant pour qu'ajouter un prestataire = écrire un fichier dans `lib/paiement/`, zéro impact ailleurs.
+
+### 6.5 Routage des webhooks entrants (multi-prestataire, multi-tenant)
+
+Chaque prestataire a sa route (`/api/webhooks/campay`, `/mesomb`, …). Séquence commune :
+
+1. `parserWebhook(req)` → extrait notre `reference`.
+2. Retrouver la `Transaction` par `reference` → en déduire l'`Abonnement`, l'`Offre`, la `ConfigurationPaiement`, donc le **tenant**.
+3. Déchiffrer les identifiants du tenant → `verifierWebhook(req, ids)`. **Si faux → 401, aucun effet.**
+4. Idempotence : si `Transaction` déjà `REUSSIE` → **200 sans effet** (anti-double-webhook, garanti aussi par la contrainte `@@unique`).
+5. Marquer `REUSSIE`, recalculer `dateEcheance` (règle anticipé/retard, §7), passer `Abonnement` en `ACTIF`.
+6. Émettre l'événement `abonnement.active` vers les **webhooks sortants** du tenant (§9).
+
+**Cas d'usage** : US-23 (choix prestataire), US-24 (multi-config), US-07/US-08 (calcul date, idempotence, conservés).
+
+---
+
+## 7. Moteur d'abonnement (state machine + cron)
+
+Inchangé dans sa logique par rapport au MVP, généralisé à N tenants.
+
+### 7.1 Recalcul de date (webhook)
+
+- `dateEcheance` future (paiement anticipé) → `nouvelle = dateEcheance + periodiciteJours` (on ne vole pas les jours déjà payés).
+- Sinon (retard / premier paiement) → `nouvelle = now() + periodiciteJours` (on ne repart pas d'une date passée).
+
+### 7.2 Cron quotidien `GET /api/cron/avancer-abonnements`
+
+Protégé par `Authorization: Bearer $CRON_SECRET`. `vercel.json` :
+
+```json
+{ "crons": [
+  { "path": "/api/cron/avancer-abonnements", "schedule": "0 3 * * *" },
+  { "path": "/api/cron/livrer-webhooks-sortants", "schedule": "*/10 * * * *" }
+]}
+```
+
+Transitions (`lib/stateMachine.ts`), pour chaque `Abonnement` de statut `!= EXPIRE`, **tous tenants confondus** :
 
 | Condition | Action |
 |---|---|
-| `statut = ACTIF` ET `dateEcheance - now() = 3 jours` | Enregistrer un `LogRelance` type `J_MOINS_3` |
-| `statut = ACTIF` ET `now() >= dateEcheance` | Passer en `TOLERANCE` |
-| `statut = TOLERANCE` ET `now() >= dateEcheance + toleranceJours` | Passer en `COUPE` |
-| `statut = COUPE` ET `now() >= dateEcheance + toleranceJours + 7 jours` ET pas déjà de `LogRelance` type `J_PLUS_7` | Enregistrer un `LogRelance` type `J_PLUS_7` |
-| `statut = COUPE` ET `now() >= dateEcheance + toleranceJours + 14 jours` | Passer en `EXPIRE` |
+| `ACTIF` et `dateEcheance - now() ≈ 3 j` | Relance `J_MOINS_3` (envoi auto via canal du template, §8) |
+| `ACTIF` et `now() >= dateEcheance` | → `TOLERANCE` (l'accès reste ouvert) |
+| `TOLERANCE` et `now() >= dateEcheance + toleranceJours` | → `COUPE` |
+| `COUPE` et `now() >= dateEcheance + toleranceJours + 7 j` et pas de `LogRelance J_PLUS_7` | Relance `J_PLUS_7` |
+| `COUPE` et `now() >= dateEcheance + toleranceJours + 14 j` | → `EXPIRE` |
 
-**Réconciliation active** : en complément, le cron interroge l'API Campay pour tout `Transaction` en statut `EN_ATTENTE` depuis plus de 15 minutes, afin de rattraper les cas où le webhook n'est jamais arrivé.
+**Réconciliation active** : le même cron appelle `verifier()` (via l'adaptateur) sur toute `Transaction` `EN_ATTENTE` depuis > 15 min, pour rattraper les webhooks jamais arrivés (US-09).
 
-**Cas d'usage couverts** :
-- *US-07* — En tant qu'éditeur, je veux que mes abonnés qui paient en retard ne soient pas lésés par un calcul de date erroné, afin de ne pas perdre leur confiance.
-- *US-08* — En tant qu'éditeur, je veux qu'un double envoi de webhook ne crédite jamais deux fois mon abonné, afin de ne pas perdre d'argent silencieusement.
-- *US-09* — En tant qu'éditeur, je veux que Kola vérifie activement les paiements même si la notification n'arrive pas, afin qu'un abonné qui a payé ne soit jamais coupé par erreur.
-- *US-10* — En tant qu'abonné final en tolérance, je veux garder mon accès, afin d'avoir le temps de renouveler sans stress.
+**Idempotence du cron** : chaque transition vérifie un pré-état, chaque relance vérifie l'absence de `LogRelance` du même type → rejouer le cron le même jour n'a aucun effet dupliqué (US-10).
 
 ---
 
-### 6.4 Relances
+## 8. Relances automatisées
 
-**Description** : messages envoyés à l'abonné aux moments clés du cycle de vie.
+Le MVP relançait à la main (bouton « copier »). Le SaaS envoie tout seul — c'est là qu'est une grande part de la valeur (« ton CA = la qualité de ta relance »).
 
-| Moment | Canal (MVP) | Contenu |
+### 8.1 Canaux
+
+| Canal | Techno | Statut |
 |---|---|---|
-| J-3 avant échéance | WhatsApp (envoi manuel au MVP) | "Ton accès expire dans 3 jours. [lien pré-rempli]" |
-| J+7 après coupure | WhatsApp (envoi manuel au MVP) | Dernière relance avant expiration définitive |
+| **WhatsApp** | WhatsApp Cloud API (Meta) — templates approuvés | Canal par défaut, le plus ouvert au Cameroun |
+| **SMS** | Passerelle locale (ex. via l'agrégateur du prestataire) | Repli si pas de WhatsApp |
+| **Email** | Provider transactionnel (Resend/Postmark) | Optionnel |
 
-**MVP** : les relances sont **déclenchées par le cron mais envoyées manuellement par l'éditeur** — chaque ligne "à relancer" dans le dashboard affiche un bouton **"Copier le message"** :
-```
-Salut ! Ton accès [nom offre] expire dans 3 jours.
-Renouvelle ici : https://kola.app/pay/clx1a2b3...
-```
-**V1** : envoi automatique via API WhatsApp Business ou équivalent.
+> **Décision** : WhatsApp par défaut car c'est le canal réellement lu. Meta impose des **templates pré-approuvés** pour les messages initiés par l'entreprise → le contenu éditable par le tenant reste dans les variables autorisées (`{nom} {offre} {prix} {jours} {lien}`), pas en texte totalement libre. À documenter dans l'onboarding.
 
-**Cas d'usage couverts** :
-- *US-11* — En tant qu'éditeur (MVP), je veux voir chaque matin la liste des abonnés à relancer avec le message prêt, afin de gagner du temps sans automatisation complète.
+### 8.2 Templating
+
+`lib/relances/template.ts` remplace les variables. Exemple `J_MOINS_3` :
+
+```
+Salut {nom} 👋 Ton accès {offre} expire dans {jours} jours.
+{prix} FCFA pour continuer 👉 {lien}
+```
+
+Modèles par défaut créés au `seed`/à l'inscription ; éditables dans `/dashboard/relances`.
+
+### 8.3 Fiabilité
+
+- Chaque envoi crée un `LogRelance` (`ENVOYE`/`ECHEC`, avec `erreur`).
+- Un échec d'envoi ne bloque **jamais** la transition d'état (la coupe/tolérance se fait indépendamment de la relance).
+- Anti-doublon : un `LogRelance` du même `type` empêche un second envoi dans le même cycle.
+
+**Cas d'usage** : US-12 (relances auto), US-25 (templates éditables), US-26 (multi-canal).
 
 ---
 
-### 6.5 Dashboard
+## 9. API publique REST + webhooks sortants
 
-**Description** : interface web protégée pour l'éditeur.
+### 9.1 API REST (server-to-server)
 
-**Authentification** : **Better Auth** (adaptateur Prisma), email/mot de passe, un seul compte au MVP. Ce choix — plutôt qu'un cookie de session fait maison — n'est pas qu'une question de confort : Better Auth inclut un plugin **"organizations"** conçu pour le pattern SaaS multi-tenant, qui se mappe directement sur le modèle `Tenant`. En V1, le passage au multi-tenant consiste à activer ce plugin, pas à réécrire le système d'authentification.
+Pour les éditeurs qui veulent piloter Kola depuis **leur** backend (au-delà du SDK Flutter). Authentifiée par la **clé secrète de l'App** (`Authorization: Bearer sk_…`), jamais la clé publique.
 
-**Pages**
+| Route | Verbe | Usage |
+|---|---|---|
+| `/api/public/v1/subscribers` | GET/POST | Lister / créer un abonné |
+| `/api/public/v1/subscriptions` | GET | Lister les abonnements + statut |
+| `/api/public/v1/subscriptions/status` | GET | Statut d'un abonné pour une offre (équivalent serveur du SDK) |
+| `/api/public/v1/offers` | GET | Lister les offres de l'app |
+
+Rate-limit par clé (cf. §11). Toute réponse scoping strict sur l'app/tenant de la clé.
+
+### 9.2 Webhooks sortants
+
+Kola notifie le backend de l'éditeur en temps réel. Événements : `abonnement.active`, `abonnement.tolerance`, `abonnement.coupe`, `abonnement.expire`, `transaction.reussie`.
+
+- Configurés dans `/dashboard/parametres/webhooks` (URL + événements souscrits).
+- Signés HMAC-SHA256 (`X-Kola-Signature`) avec un secret propre au webhook → l'éditeur vérifie l'authenticité.
+- Livraison via cron `livrer-webhooks-sortants` : retry avec back-off exponentiel (`LivraisonWebhook.prochainEssai`), abandon après N tentatives, journalisées.
+
+**Cas d'usage** : US-27 (API REST), US-28 (webhooks sortants).
+
+---
+
+## 10. Dashboard complet
+
+### 10.1 Vue d'ensemble `/dashboard`
+
+Compteurs et métriques (`lib/metriques.ts`) :
+
+- **Actifs · à relancer (J-3) · en tolérance · coupés · expirés** (par app, ou agrégé)
+- **MRR** (revenu mensuel récurrent) = Σ prix des abonnements `ACTIF`/`TOLERANCE`
+- **Encaissé ce mois** = Σ montants des `Transaction REUSSIE` du mois courant
+- **Churn** = coupés/expirés du mois ÷ actifs début de mois
+- **Taux de conversion des relances** = (abonnements repassés `ACTIF` dans les 7 j après un `LogRelance`) ÷ relances envoyées
+- Graphe d'évolution des actifs et de l'encaissé sur 12 mois
+
+### 10.2 Autres écrans
 
 | Route | Contenu |
 |---|---|
-| `/dashboard` | Compteurs : actifs · à relancer (J-3) · en tolérance · coupés · expirés |
-| `/dashboard/abonnes` | Tableau des abonnés : identifiant, statut, date d'échéance, dernier paiement. Filtrable par statut. |
+| `/dashboard/apps` + `/apps/[appId]` | Apps, offres, clés API (public/secret), **snippet d'intégration SDK prêt à copier** |
+| `/dashboard/abonnes` | Table filtrable (statut, offre, app) + recherche par numéro + **export CSV** |
+| `/dashboard/paiements` | Historique des transactions, filtres, statuts |
+| `/dashboard/relances` | Templates par type/canal + journal des envois + taux de conversion |
+| `/dashboard/parametres/prestataires` | Ajout/test/activation des configs de paiement, choix du prestataire par défaut |
+| `/dashboard/parametres/equipe` | Membres, rôles, invitations |
+| `/dashboard/parametres/facturation` | **Abonnement du tenant à Kola** (palier, prochaine échéance, lien de paiement) |
+| `/dashboard/parametres/webhooks` | Webhooks sortants |
 
-**Route API associée** : `GET /api/admin/abonnes` (protégée par la session Better Auth), retourne la liste avec statut calculé.
+### 10.3 Export CSV
 
-**Cas d'usage couverts** :
-- *US-13* — En tant qu'éditeur, je veux voir en un coup d'œil combien d'abonnés actifs je compte, afin de suivre mon revenu récurrent pour la première fois.
+`GET /api/admin/abonnes/export` → CSV (identifiant, statut, offre, échéance, dernier paiement). Scoping tenant. **Garantie « portabilité »** promise sur la page de vente : « tes abonnés sont à toi, exportables en un clic ».
 
----
-
-### 6.6 Parcours utilisateur final (UX mobile ↔ web)
-
-**Principe directeur** : rien qui ressemble à un acte d'achat ne doit exister à l'intérieur de l'app mobile (conformité Google Play). Toute la conversion se passe hors app, sur WhatsApp puis sur la page de paiement web.
-
-**Étape 1 — Inscription dans l'app**
-L'app capture le **numéro de téléphone** de l'utilisateur (donnée de profil classique, aucun lien visible avec un paiement à ce stade). Ce numéro devient `Abonne.identifiantExterne`.
-
-**Étape 2 — Écran de paywall**
-Quand l'utilisateur atteint une fonctionnalité verrouillée, l'écran reste neutre et informatif :
-- Autorisé : cadenas, badge "Premium", description des fonctionnalités débloquées.
-- Interdit à tout jamais : prix affiché, bouton "Payer"/"S'abonner", lien cliquable vers la page de paiement Kola.
-
-**Étape 3 — Déclenchement de la relance**
-Dès que l'utilisateur touche un mur premium pour la première fois (ou selon le calendrier §6.4), le **serveur** (pas l'app) envoie un message WhatsApp contenant le lien `/pay/[lienPaiement]` — canal entièrement extérieur à l'app.
-
-**Étape 4 — Paiement**
-L'utilisateur clique le lien, arrive sur la page de paiement web, paie (cf. §6.2). Le lien étant permanent et unique par `Abonnement`, le serveur retrouve l'`Abonnement` par simple correspondance sur `lienPaiement` — **aucun système de login web n'est nécessaire** : posséder le lien fait foi, exactement comme un lien de réinitialisation de mot de passe par email.
-
-**Étape 5 — Retour dans l'app**
-Un seul bouton autorisé dans l'app en lien avec le paiement : **"Vérifier mon accès"**, qui appelle `Kola.refresh()`. Ce n'est pas un acte d'achat, c'est une actualisation de statut.
-
-**Étape 6 — Restauration après désinstallation/réinstallation**
-Comme `identifiantExterne` est le numéro de téléphone (stable, indépendant de l'appareil), un utilisateur qui réinstalle ne perd pas son accès : un écran **"Déjà abonné ? Entrez votre numéro"** dans l'app appelle `isActive('premium', identifiantExterne: numéroSaisi)`. Kola retrouve le même `Abonne` et restaure l'accès immédiatement.
-
-> **Décision de sécurité MVP** : aucune vérification du numéro saisi (pas d'OTP/SMS). Quiconque connaît un numéro peut interroger son statut d'abonnement — risque jugé acceptable au MVP (aucun accès ne peut être volé, seulement consulté). À réévaluer en V1.
-
-**Ce que l'utilisateur ne voit jamais dans l'app** : compte à rebours d'abonnement, rappel de facturation, notification "ton abonnement expire" — tout ce qui touche à l'échéance vit exclusivement sur WhatsApp.
+**Cas d'usage** : US-13 (métriques complètes), US-14 (export CSV), US-29 (snippet d'intégration).
 
 ---
 
-## 7. Spécifications techniques
+## 11. Dogfooding : Kola facturé par Kola
 
-| Composant | Choix |
-|---|---|
-| Frontend + API + page de paiement | Next.js (App Router), un seul projet |
-| ORM | Prisma |
-| Base de données | PostgreSQL hébergé sur Neon |
-| Tâche planifiée | Vercel Cron (quotidien), pas de queue/worker séparé au MVP |
-| Provider de paiement (MVP) | Campay — sandbox `demo.campay.net`, puis production |
-| Authentification SDK ↔ API | Clé API publique par tenant + JWT **RS256** (clé privée serveur, clé publique embarquée dans le SDK) |
-| Authentification dashboard | Better Auth (adaptateur Prisma), email/mot de passe au MVP, plugin "organizations" activé en V1 |
-| Hébergement | Vercel (dashboard, API, cron via `vercel.json`) |
+C'est la cohérence du produit : **Kola encaisse ses propres clients avec Kola.**
 
----
+- Le `seed.ts` crée un **tenant système** `Kola` (`estSysteme = true`) avec une App `Plateforme` et des offres = les **paliers** (§2.2).
+- À l'inscription, chaque nouvel éditeur (tenant) est enregistré comme **`Abonne` du tenant système**, sur l'offre correspondant à son palier.
+- Sa facturation passe par **exactement** la même mécanique : page `/pay/[lienPaiement]`, prestataire (celui de Kola, ex. Campay), webhook, cron, relances.
+- **Suspension** : quand l'abonnement d'un éditeur à Kola passe `COUPE`, le champ dénormalisé `Tenant.statutPlateforme` bascule. Effet :
+  - Dashboard en lecture seule (bandeau « facture en attente, renouvelle ici »).
+  - `GET /api/v1/subscriptions/status` (SDK) continue de répondre pendant la **tolérance** (on ne casse pas la prod de l'éditeur du jour au lendemain — même logique de tolérance que n'importe quel abonné), puis renvoie un statut dégradé documenté au-delà.
 
-## 8. Exigences non fonctionnelles
+> **Garde éthique cohérente avec le discours produit** : on ne coupe jamais brutalement un éditeur en production. La tolérance protège son app comme elle protège les abonnés de ses propres clients.
 
-- **Sécurité** : Kola ne stocke jamais de données bancaires — uniquement le numéro de téléphone transmis au provider. `campayAppSecret` chiffré au repos (AES-256-GCM, clé applicative en variable d'environnement Vercel).
-- **Signature JWT en RS256, jamais HS256** : une clé symétrique embarquée dans le SDK Flutter serait extractible par rétro-ingénierie et permettrait de forger des accès premium gratuits sur toutes les apps Kola.
-- **Idempotence webhook** : garantie par la contrainte `@unique` sur `providerTransactionId`, pas seulement par une vérification applicative.
-- **Protection du cron** : rejette toute requête sans le header secret `CRON_SECRET`.
-- **Protection du webhook** : vérification de l'origine/signature Campay avant tout traitement.
-- **Disponibilité offline (SDK)** : fonctionne en cache jusqu'à 72h sans réseau ; le JWT ne contient aucune donnée sensible puisqu'il est stocké en clair sur l'appareil de l'utilisateur final.
-- **Non-custodial** : Kola ne détient jamais les fonds ; l'argent va directement du client final au compte Campay/MeSomb de l'éditeur.
-- **Portabilité** : export des données abonnés possible à tout moment (CSV, V1), sans dépendance à Kola pour y accéder.
+**Cas d'usage** : US-30 (dogfooding), US-31 (suspension progressive).
 
 ---
 
-## 9. Plan de test du MVP (scénarios à valider avant mise en production)
+## 12. Exigences non fonctionnelles
 
-1. **Paiement sandbox → activation** : payer via `demo.campay.net` (≤ 100 FCFA), vérifier que le webhook active l'abonnement avec la bonne `dateEcheance`.
-2. **Double webhook** : rejouer manuellement le même payload deux fois → un seul `ACTIF` enregistré, pas de doublon de date.
-3. **Paiement en avance** : simuler un paiement 3 jours avant `dateEcheance` → `nouvelle_echeance = ancienne + periodiciteJours`.
-4. **Paiement en retard** : simuler un paiement après passage en `COUPE` → `nouvelle_echeance = now() + periodiciteJours` (pas de reprise de l'ancienne date).
-5. **Cycle complet sans paiement** : vérifier la séquence `ACTIF → TOLERANCE → COUPE → (relance J+7) → EXPIRE`.
-6. **SDK hors ligne** : couper le réseau après un premier appel réussi → `isActive()` retourne `true` tant que le JWT n'a pas dépassé 72h.
-7. **Cron idempotent** : exécuter la route cron deux fois de suite le même jour → aucun état n'avance deux fois, aucune relance dupliquée.
-8. **Restauration après réinstallation** : simuler une désinstallation (vider le cache local), resaisir le numéro de téléphone → l'accès est restauré via `isActive()`.
-
----
-
-## 10. Hors périmètre (à tout horizon, par principe)
-
-- Kola ne devient jamais une banque, ne détient jamais de fonds.
-- Le SDK ne propose jamais d'ouverture de page de paiement ou de bouton d'achat dans l'app (conformité Google Play).
-- Pas d'essais gratuits, coupons, ou plans annuels au MVP/V1.
-- Pas de support iOS au lancement.
-- Pas de vérification par OTP au MVP (cf. §6.6).
+- **Isolation tenant** : filtrage `tenantId` systématique (§5.3). Revue de sécurité dédiée avant chaque release majeure.
+- **Chiffrement des secrets** : identifiants prestataires en AES-256-GCM ; clé maîtresse en variable d'environnement Vercel (KMS en V2). Jamais loggés, jamais renvoyés en clair par une API.
+- **Idempotence** : webhooks (`@@unique provider+providerTransactionId`), cron (pré-états), livraisons sortantes (retry borné).
+- **Disponibilité** : `/api/v1/subscriptions/status` est sur le chemin critique de **toutes** les apps clientes → viser une haute dispo ; le cache JWT 72 h du SDK amortit une panne temporaire (fail-safe côté client).
+- **Rate limiting** : par clé publique (endpoint SDK) et par clé secrète (API REST) — protège contre l'abus et le scraping de statut.
+- **Auth** : argon2id, sessions révocables, cookies durcis, protection CSRF sur le dashboard, verrouillage après N échecs.
+- **Observabilité** : logs structurés, métriques d'erreur webhook/relance, alerte si le cron échoue ou si un prestataire renvoie un taux d'échec anormal.
+- **Sauvegardes** : PITR Neon ; export CSV comme filet de portabilité côté éditeur.
+- **Conformité Google Play** : garantie par l'architecture (paiement 100 % hors app) — vérifiée aussi côté SDK (cf. cahier `kola_sdk`, §1).
+- **Confidentialité** : payload JWT sans donnée sensible (stocké en clair sur l'appareil final) ; pas de numéro/téléphone dans les URLs (`lienPaiement` opaque) ; journal d'audit des actions sensibles.
 
 ---
 
-## 11. Versions suivantes (listées, non détaillées)
+## 13. User stories consolidées
 
-### V1 — multi-tenant, produit vendable
-- Inscription éditeur (Better Auth + plugin "organizations", plus de compte unique)
-- Connexion des propres clés Campay/MeSomb par chaque tenant (chiffrement par tenant)
-- Plusieurs offres par app configurables depuis le dashboard (déjà supporté par le schéma, à exposer en UI)
-- Automatisation complète des relances (WhatsApp Business API ou équivalent)
-- Compteur "encaissé ce mois" sur le dashboard
-- Export CSV des abonnés
-- Kola facture ses propres clients via Kola (dogfooding)
+**Conservées du MVP** : US-01→US-11 (statut SDK, offline, paiement, webhook, cron, relance manuelle), US-17 (restauration par numéro).
 
-### V2 — robustesse et différenciation
-- Multi-devise / autres pays (Sénégal, Gabon...)
-- Templates de relance personnalisables
-- Webhooks sortants (Kola notifie l'app cliente en temps réel)
-- Rôles multi-utilisateurs sur le dashboard
-- API publique documentée (au-delà du SDK Flutter)
-- Historique des transactions + reçus
-- Métriques de pilotage (taux de conversion des relances, churn)
+**Nouvelles (SaaS)** :
 
-### V3 — extensions
-- Essais gratuits, coupons, plans annuels
-- SDK natif Android/iOS
-- Marketplace / mise en relation entre développeurs clients
-- White-label du dashboard
+- **US-20** — En tant qu'éditeur, je m'inscris en self-service et j'obtiens mes clés API sans intervention humaine.
+- **US-21 / US-22** — J'invite des coéquipiers avec des rôles (propriétaire/admin/lecture).
+- **US-23** — Je choisis mon prestataire de paiement (Campay, MeSomb, PayDunya, Flutterwave) et je colle **mes** clés.
+- **US-24** — Je configure plusieurs prestataires et j'en choisis un par offre (ou un par défaut).
+- **US-25 / US-26** — J'édite mes messages de relance et je choisis le canal (WhatsApp/SMS/email).
+- **US-27 / US-28** — Je pilote Kola depuis mon backend via API REST, et je reçois des webhooks sortants signés.
+- **US-29** — Je copie un snippet d'intégration SDK pré-rempli avec mes clés.
+- **US-13/14** — Je vois mes métriques (MRR, churn, encaissé, conversion) et j'exporte mes abonnés en CSV.
+- **US-30 / US-31** — Je paie mon abonnement Kola via Kola, avec une suspension progressive et tolérante en cas d'impayé.
 
 ---
 
-## 12. Critères d'acceptation du MVP
+## 14. Plan de test
 
-Le MVP est considéré fonctionnel quand :
+Reprend les 7 scénarios MVP (paiement sandbox → activation, double webhook, anticipé vs retard, cycle complet, SDK offline 72 h, cron idempotent) **et ajoute** :
 
-1. L'app de l'auteur, en test fermé, appelle `Kola.isActive('premium')` et reçoit une réponse correcte.
-2. Un paiement test en sandbox Campay déclenche le passage de l'abonnement à `ACTIF` avec la bonne date d'échéance.
-3. Un webhook envoyé deux fois ne crédite l'abonnement qu'une seule fois.
-4. Un abonnement arrivé à échéance passe automatiquement en tolérance puis en coupure selon le calendrier défini.
-5. Le dashboard affiche la liste des abonnés avec leur statut réel, derrière une authentification Better Auth fonctionnelle.
-6. Le SDK renvoie un accès valide même sans réseau, pendant la durée de vie du token en cache.
-7. Un utilisateur peut restaurer son accès après réinstallation en resaisissant son numéro de téléphone.
+8. **Multi-prestataire** : même scénario de paiement validé sur Campay **et** MeSomb sandbox → activation identique, calcul de date identique.
+9. **Isolation tenant** : le tenant A ne peut jamais lire un abonné/une transaction du tenant B (test d'accès croisé sur chaque route admin et API publique).
+10. **Vérif signature webhook** : un webhook au mauvais secret est rejeté (401, aucun effet) pour chaque prestataire.
+11. **Rôles** : un `LECTURE` ne peut écrire nulle part ; un `ADMIN` ne peut pas toucher à la facturation.
+12. **Relance auto** : le cron déclenche l'envoi WhatsApp au bon jour, journalise, ne double jamais un envoi.
+13. **Webhook sortant** : événement `abonnement.active` livré, signé, rejoué avec back-off en cas d'échec HTTP.
+14. **Dogfooding** : impayé d'un tenant → tolérance puis lecture seule, sans casser son endpoint SDK pendant la tolérance.
+15. **Chiffrement** : les identifiants prestataires ne sont jamais lisibles en base ni renvoyés en clair par aucune API.
 
 ---
 
-## 13. Ordre d'implémentation suggéré
+## 15. Ordre d'implémentation suggéré
 
-1. `npx create-next-app` (`kola-web`) + configuration Prisma + connexion Neon
-2. Écrire le schéma Prisma (§5), migrer, écrire le `seed.ts` (un `Tenant`, une `App`, une `Offre`)
-3. Créer un compte sandbox Campay, écrire `lib/campay.ts`
-4. Route `/api/pay/initiate` + page `/pay/[lienPaiement]` (flux testable en sandbox dès cette étape)
-5. Route `/api/webhooks/campay` + tests des scénarios 1 et 2 (§9)
-6. `lib/stateMachine.ts` + route `/api/cron/avancer-abonnements` + tests des scénarios 3, 4, 5, 7
-7. Route `/api/v1/subscriptions/status` + `lib/jwt.ts` (signature RS256)
-8. Package `kola_sdk` (Flutter) — cf. cahier des charges séparé — + test du scénario 6
-9. Dashboard (`/dashboard`, `/dashboard/abonnes`) + Better Auth
-10. Écran de restauration côté app + test du scénario 8
-11. Intégration complète sur l'app en test fermé, cycle de vie réel sur quelques testeurs
+1. `create-next-app` + Prisma + Neon + schéma complet (§4) + migration.
+2. `lib/crypto.ts` (AES-256-GCM) + `lib/jwt.ts` (RS256).
+3. Auth maison (inscription, connexion, sessions, hash argon2) + `lib/tenant.ts` (isolation) + rôles.
+4. Abstraction paiement `lib/paiement/` : interface + factory + **CampayAdapter** + **MesombAdapter** + `tester()`.
+5. Dashboard `parametres/prestataires` (ajouter/tester/activer une config).
+6. Page `/pay/[lienPaiement]` + `POST /api/pay/initiate` (via factory).
+7. Webhooks entrants `/api/webhooks/[prestataire]` (résolution par `reference`, vérif signature, idempotence).
+8. `lib/stateMachine.ts` + cron `avancer-abonnements` + réconciliation active.
+9. Relances `lib/relances/` (WhatsApp Cloud API d'abord) + templates + envoi depuis le cron.
+10. `GET /api/v1/subscriptions/status` (endpoint SDK) + rate-limit.
+11. Dashboard complet : apps/offres/clés + abonnés + paiements + relances + métriques + export CSV.
+12. Équipe & invitations.
+13. API publique REST + webhooks sortants (+ cron de livraison).
+14. **Dogfooding** : `seed.ts` tenant système + inscription qui enrôle chaque tenant comme abonné Kola + suspension.
+15. Adaptateurs PayDunya & Flutterwave (l'interface étant figée, c'est du remplissage).
+16. Intégration réelle avec `kola_sdk` sur une app en test fermé.
+
+---
+
+## 16. Roadmap au-delà
+
+- **Multi-devise réelle** (XOF, MAD…) et localisation par pays (Flutterwave aide ici).
+- **SDK natifs** Android (Kotlin) / iOS (Swift) quand le hors-périmètre iOS sera levé.
+- **KMS géré** pour les secrets (au lieu de la clé d'environnement).
+- **SSO** pour les gros tenants ; SAML/OIDC.
+- **Marketplace / mise en relation** entre développeurs clients.
+- **White-label** du dashboard et de la page de paiement.
+- **Extraction de l'API** vers un backend séparé (Laravel) — rendue possible par la discipline « dashboard n'accède jamais à la base directement ».
+
+---
+
+## 17. Hors périmètre, à tout horizon
+
+- Kola ne détient **jamais** de fonds (non-custodial : argent → directement au compte prestataire du tenant).
+- Le SDK ne propose **jamais** d'ouverture de paiement, de prix, ni de bouton d'achat dans l'app mobile (conformité Google Play).
+- Aucune fonctionnalité de « portefeuille Kola », « solde », ou « reversement ».
+- Le JWT du SDK ne contient jamais de donnée sensible (stocké en clair sur l'appareil final).

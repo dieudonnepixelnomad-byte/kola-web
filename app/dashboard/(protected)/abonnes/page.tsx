@@ -1,5 +1,8 @@
 import { headers } from "next/headers";
 import Link from "next/link";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { CopyButton } from "./CopyButton";
 
 type Abonnement = {
@@ -10,14 +13,14 @@ type Abonnement = {
   abonne: { identifiantExterne: string };
   offre: { nom: string };
   transactions: { recuLe: string; statut: string }[];
-  logsRelance: { type: "J_MOINS_3" | "J_PLUS_7"; envoyeLe: string }[];
+  logsRelance: { type: "J_MOINS_3" | "J_ECHEANCE" | "J_PLUS_7"; envoyeLe: string }[];
 };
 
-const STATUT_STYLE: Record<Abonnement["statut"], { bg: string; fg: string }> = {
-  ACTIF: { bg: "var(--color-kola-actif-bg)", fg: "var(--color-kola-actif-fg)" },
-  TOLERANCE: { bg: "var(--color-kola-tolerance-bg)", fg: "var(--color-kola-tolerance-fg)" },
-  COUPE: { bg: "var(--color-kola-coupe-bg)", fg: "var(--color-kola-coupe-fg)" },
-  EXPIRE: { bg: "var(--color-kola-expire-bg)", fg: "var(--color-kola-expire-fg)" },
+const STATUT_VARIANT: Record<Abonnement["statut"], "default" | "secondary" | "destructive" | "outline"> = {
+  ACTIF: "default",
+  TOLERANCE: "secondary",
+  COUPE: "destructive",
+  EXPIRE: "outline",
 };
 
 const STATUT_LABEL: Record<Abonnement["statut"], string> = {
@@ -47,10 +50,6 @@ export default async function AbonnesPage({
 }) {
   const { statut } = await searchParams;
   const abonnements = await getAbonnements();
-  const h = await headers();
-  const host = h.get("host");
-  const protocole = process.env.NODE_ENV === "production" ? "https" : "http";
-  const baseUrl = `${protocole}://${host}`;
 
   const filtre = statut ?? "tous";
   const counts: Record<string, number> = { tous: abonnements.length };
@@ -83,6 +82,11 @@ export default async function AbonnesPage({
             {lignes.length} abonné(s) affiché(s) sur {abonnements.length}
           </p>
         </div>
+        <Button asChild variant="outline" size="sm">
+          <a href="/api/admin/export" download>
+            Exporter en CSV
+          </a>
+        </Button>
       </div>
 
       <div className="mb-3.5 flex flex-wrap gap-1.5">
@@ -107,53 +111,43 @@ export default async function AbonnesPage({
       </div>
 
       <div className="overflow-hidden rounded-2xl border border-kola-border bg-white">
-        <div className="grid grid-cols-[1.5fr_1fr_1.2fr_1fr_1.4fr] gap-3 border-b border-kola-border bg-[#faf7ef] px-4.5 py-2.5 text-[11px] font-bold uppercase tracking-wider text-[#8b8474]">
-          <div>Abonné</div>
-          <div>Statut</div>
-          <div>Échéance</div>
-          <div>Dernier paiement</div>
-          <div className="text-right">Actions</div>
-        </div>
-        {lignes.map((a) => {
-          const relance = a.logsRelance[0];
-          const message = `Salut ! Ton acces ${a.offre.nom} expire ${
-            relance?.type === "J_PLUS_7" ? "" : "dans 3 jours"
-          }.\nRenouvelle ici : ${baseUrl}/pay/${a.lienPaiement}`;
-          const st = STATUT_STYLE[a.statut];
-          return (
-            <div
-              key={a.id}
-              className="grid grid-cols-[1.5fr_1fr_1.2fr_1fr_1.4fr] items-center gap-3 border-b border-[#f4efe4] px-4.5 py-3 last:border-b-0 hover:bg-[#fbf9f3]"
-            >
-              <div className="min-w-0">
-                <div className="font-mono text-[13px] font-bold">
-                  {a.abonne.identifiantExterne}
-                </div>
-                <div className="text-[11.5px] text-kola-muted-light">{a.offre.nom}</div>
-              </div>
-              <div>
-                <span
-                  className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11.5px] font-bold"
-                  style={{ background: st.bg, color: st.fg }}
-                >
-                  <span className="h-1.5 w-1.5 rounded-full" style={{ background: st.fg }} />
-                  {STATUT_LABEL[a.statut]}
-                </span>
-              </div>
-              <div className="text-sm font-semibold tabular-nums">
-                {a.dateEcheance ? new Date(a.dateEcheance).toLocaleDateString("fr-FR") : "-"}
-              </div>
-              <div className="text-sm text-kola-muted tabular-nums">
-                {a.transactions[0]
-                  ? new Date(a.transactions[0].recuLe).toLocaleDateString("fr-FR")
-                  : "-"}
-              </div>
-              <div className="flex justify-end gap-1.5">
-                {relance && <CopyButton message={message} />}
-              </div>
-            </div>
-          );
-        })}
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Abonné</TableHead>
+              <TableHead>Statut</TableHead>
+              <TableHead>Échéance</TableHead>
+              <TableHead>Dernier paiement</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {lignes.map((a) => {
+              const relance = a.logsRelance[0];
+              const message = `Salut ! Ton acces ${a.offre.nom} expire ${
+                relance?.type === "J_PLUS_7" ? "" : "dans 3 jours"
+              }.\nRenouvelle ici : /pay/${a.lienPaiement}`;
+              return (
+                <TableRow key={a.id}>
+                  <TableCell>
+                    <div className="font-mono text-[13px] font-bold">{a.abonne.identifiantExterne}</div>
+                    <div className="text-[11.5px] text-kola-muted-light">{a.offre.nom}</div>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={STATUT_VARIANT[a.statut]}>{STATUT_LABEL[a.statut]}</Badge>
+                  </TableCell>
+                  <TableCell className="tabular-nums">
+                    {a.dateEcheance ? new Date(a.dateEcheance).toLocaleDateString("fr-FR") : "-"}
+                  </TableCell>
+                  <TableCell className="tabular-nums text-kola-muted">
+                    {a.transactions[0] ? new Date(a.transactions[0].recuLe).toLocaleDateString("fr-FR") : "-"}
+                  </TableCell>
+                  <TableCell className="text-right">{relance && <CopyButton message={message} />}</TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
         <div className="flex items-center justify-between px-4.5 py-3 text-xs text-kola-muted-light">
           <span>{lignes.length} ligne(s)</span>
           <span>Statut recalculé par le cron quotidien</span>

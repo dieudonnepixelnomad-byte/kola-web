@@ -28,24 +28,30 @@ export type LogRelanceMinAggregateOutputType = {
   id: string | null
   abonnementId: string | null
   type: $Enums.TypeRelance | null
+  canal: $Enums.CanalRelance | null
+  statutEnvoi: string | null
+  erreur: string | null
   envoyeLe: Date | null
-  canal: string | null
 }
 
 export type LogRelanceMaxAggregateOutputType = {
   id: string | null
   abonnementId: string | null
   type: $Enums.TypeRelance | null
+  canal: $Enums.CanalRelance | null
+  statutEnvoi: string | null
+  erreur: string | null
   envoyeLe: Date | null
-  canal: string | null
 }
 
 export type LogRelanceCountAggregateOutputType = {
   id: number
   abonnementId: number
   type: number
-  envoyeLe: number
   canal: number
+  statutEnvoi: number
+  erreur: number
+  envoyeLe: number
   _all: number
 }
 
@@ -54,24 +60,30 @@ export type LogRelanceMinAggregateInputType = {
   id?: true
   abonnementId?: true
   type?: true
-  envoyeLe?: true
   canal?: true
+  statutEnvoi?: true
+  erreur?: true
+  envoyeLe?: true
 }
 
 export type LogRelanceMaxAggregateInputType = {
   id?: true
   abonnementId?: true
   type?: true
-  envoyeLe?: true
   canal?: true
+  statutEnvoi?: true
+  erreur?: true
+  envoyeLe?: true
 }
 
 export type LogRelanceCountAggregateInputType = {
   id?: true
   abonnementId?: true
   type?: true
-  envoyeLe?: true
   canal?: true
+  statutEnvoi?: true
+  erreur?: true
+  envoyeLe?: true
   _all?: true
 }
 
@@ -151,8 +163,10 @@ export type LogRelanceGroupByOutputType = {
   id: string
   abonnementId: string
   type: $Enums.TypeRelance
+  canal: $Enums.CanalRelance
+  statutEnvoi: string
+  erreur: string | null
   envoyeLe: Date
-  canal: string
   _count: LogRelanceCountAggregateOutputType | null
   _min: LogRelanceMinAggregateOutputType | null
   _max: LogRelanceMaxAggregateOutputType | null
@@ -180,8 +194,10 @@ export type LogRelanceWhereInput = {
   id?: Prisma.StringFilter<"LogRelance"> | string
   abonnementId?: Prisma.StringFilter<"LogRelance"> | string
   type?: Prisma.EnumTypeRelanceFilter<"LogRelance"> | $Enums.TypeRelance
+  canal?: Prisma.EnumCanalRelanceFilter<"LogRelance"> | $Enums.CanalRelance
+  statutEnvoi?: Prisma.StringFilter<"LogRelance"> | string
+  erreur?: Prisma.StringNullableFilter<"LogRelance"> | string | null
   envoyeLe?: Prisma.DateTimeFilter<"LogRelance"> | Date | string
-  canal?: Prisma.StringFilter<"LogRelance"> | string
   abonnement?: Prisma.XOR<Prisma.AbonnementScalarRelationFilter, Prisma.AbonnementWhereInput>
 }
 
@@ -189,8 +205,10 @@ export type LogRelanceOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   abonnementId?: Prisma.SortOrder
   type?: Prisma.SortOrder
-  envoyeLe?: Prisma.SortOrder
   canal?: Prisma.SortOrder
+  statutEnvoi?: Prisma.SortOrder
+  erreur?: Prisma.SortOrderInput | Prisma.SortOrder
+  envoyeLe?: Prisma.SortOrder
   abonnement?: Prisma.AbonnementOrderByWithRelationInput
 }
 
@@ -201,8 +219,10 @@ export type LogRelanceWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.LogRelanceWhereInput | Prisma.LogRelanceWhereInput[]
   abonnementId?: Prisma.StringFilter<"LogRelance"> | string
   type?: Prisma.EnumTypeRelanceFilter<"LogRelance"> | $Enums.TypeRelance
+  canal?: Prisma.EnumCanalRelanceFilter<"LogRelance"> | $Enums.CanalRelance
+  statutEnvoi?: Prisma.StringFilter<"LogRelance"> | string
+  erreur?: Prisma.StringNullableFilter<"LogRelance"> | string | null
   envoyeLe?: Prisma.DateTimeFilter<"LogRelance"> | Date | string
-  canal?: Prisma.StringFilter<"LogRelance"> | string
   abonnement?: Prisma.XOR<Prisma.AbonnementScalarRelationFilter, Prisma.AbonnementWhereInput>
 }, "id">
 
@@ -210,8 +230,10 @@ export type LogRelanceOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   abonnementId?: Prisma.SortOrder
   type?: Prisma.SortOrder
-  envoyeLe?: Prisma.SortOrder
   canal?: Prisma.SortOrder
+  statutEnvoi?: Prisma.SortOrder
+  erreur?: Prisma.SortOrderInput | Prisma.SortOrder
+  envoyeLe?: Prisma.SortOrder
   _count?: Prisma.LogRelanceCountOrderByAggregateInput
   _max?: Prisma.LogRelanceMaxOrderByAggregateInput
   _min?: Prisma.LogRelanceMinOrderByAggregateInput
@@ -224,15 +246,19 @@ export type LogRelanceScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"LogRelance"> | string
   abonnementId?: Prisma.StringWithAggregatesFilter<"LogRelance"> | string
   type?: Prisma.EnumTypeRelanceWithAggregatesFilter<"LogRelance"> | $Enums.TypeRelance
+  canal?: Prisma.EnumCanalRelanceWithAggregatesFilter<"LogRelance"> | $Enums.CanalRelance
+  statutEnvoi?: Prisma.StringWithAggregatesFilter<"LogRelance"> | string
+  erreur?: Prisma.StringNullableWithAggregatesFilter<"LogRelance"> | string | null
   envoyeLe?: Prisma.DateTimeWithAggregatesFilter<"LogRelance"> | Date | string
-  canal?: Prisma.StringWithAggregatesFilter<"LogRelance"> | string
 }
 
 export type LogRelanceCreateInput = {
   id?: string
   type: $Enums.TypeRelance
+  canal?: $Enums.CanalRelance
+  statutEnvoi?: string
+  erreur?: string | null
   envoyeLe?: Date | string
-  canal?: string
   abonnement: Prisma.AbonnementCreateNestedOneWithoutLogsRelanceInput
 }
 
@@ -240,15 +266,19 @@ export type LogRelanceUncheckedCreateInput = {
   id?: string
   abonnementId: string
   type: $Enums.TypeRelance
+  canal?: $Enums.CanalRelance
+  statutEnvoi?: string
+  erreur?: string | null
   envoyeLe?: Date | string
-  canal?: string
 }
 
 export type LogRelanceUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumTypeRelanceFieldUpdateOperationsInput | $Enums.TypeRelance
+  canal?: Prisma.EnumCanalRelanceFieldUpdateOperationsInput | $Enums.CanalRelance
+  statutEnvoi?: Prisma.StringFieldUpdateOperationsInput | string
+  erreur?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   envoyeLe?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  canal?: Prisma.StringFieldUpdateOperationsInput | string
   abonnement?: Prisma.AbonnementUpdateOneRequiredWithoutLogsRelanceNestedInput
 }
 
@@ -256,31 +286,39 @@ export type LogRelanceUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   abonnementId?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumTypeRelanceFieldUpdateOperationsInput | $Enums.TypeRelance
+  canal?: Prisma.EnumCanalRelanceFieldUpdateOperationsInput | $Enums.CanalRelance
+  statutEnvoi?: Prisma.StringFieldUpdateOperationsInput | string
+  erreur?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   envoyeLe?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  canal?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
 export type LogRelanceCreateManyInput = {
   id?: string
   abonnementId: string
   type: $Enums.TypeRelance
+  canal?: $Enums.CanalRelance
+  statutEnvoi?: string
+  erreur?: string | null
   envoyeLe?: Date | string
-  canal?: string
 }
 
 export type LogRelanceUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumTypeRelanceFieldUpdateOperationsInput | $Enums.TypeRelance
+  canal?: Prisma.EnumCanalRelanceFieldUpdateOperationsInput | $Enums.CanalRelance
+  statutEnvoi?: Prisma.StringFieldUpdateOperationsInput | string
+  erreur?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   envoyeLe?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  canal?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
 export type LogRelanceUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   abonnementId?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumTypeRelanceFieldUpdateOperationsInput | $Enums.TypeRelance
+  canal?: Prisma.EnumCanalRelanceFieldUpdateOperationsInput | $Enums.CanalRelance
+  statutEnvoi?: Prisma.StringFieldUpdateOperationsInput | string
+  erreur?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   envoyeLe?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  canal?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
 export type LogRelanceListRelationFilter = {
@@ -297,24 +335,30 @@ export type LogRelanceCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   abonnementId?: Prisma.SortOrder
   type?: Prisma.SortOrder
-  envoyeLe?: Prisma.SortOrder
   canal?: Prisma.SortOrder
+  statutEnvoi?: Prisma.SortOrder
+  erreur?: Prisma.SortOrder
+  envoyeLe?: Prisma.SortOrder
 }
 
 export type LogRelanceMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   abonnementId?: Prisma.SortOrder
   type?: Prisma.SortOrder
-  envoyeLe?: Prisma.SortOrder
   canal?: Prisma.SortOrder
+  statutEnvoi?: Prisma.SortOrder
+  erreur?: Prisma.SortOrder
+  envoyeLe?: Prisma.SortOrder
 }
 
 export type LogRelanceMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   abonnementId?: Prisma.SortOrder
   type?: Prisma.SortOrder
-  envoyeLe?: Prisma.SortOrder
   canal?: Prisma.SortOrder
+  statutEnvoi?: Prisma.SortOrder
+  erreur?: Prisma.SortOrder
+  envoyeLe?: Prisma.SortOrder
 }
 
 export type LogRelanceCreateNestedManyWithoutAbonnementInput = {
@@ -359,22 +403,22 @@ export type LogRelanceUncheckedUpdateManyWithoutAbonnementNestedInput = {
   deleteMany?: Prisma.LogRelanceScalarWhereInput | Prisma.LogRelanceScalarWhereInput[]
 }
 
-export type EnumTypeRelanceFieldUpdateOperationsInput = {
-  set?: $Enums.TypeRelance
-}
-
 export type LogRelanceCreateWithoutAbonnementInput = {
   id?: string
   type: $Enums.TypeRelance
+  canal?: $Enums.CanalRelance
+  statutEnvoi?: string
+  erreur?: string | null
   envoyeLe?: Date | string
-  canal?: string
 }
 
 export type LogRelanceUncheckedCreateWithoutAbonnementInput = {
   id?: string
   type: $Enums.TypeRelance
+  canal?: $Enums.CanalRelance
+  statutEnvoi?: string
+  erreur?: string | null
   envoyeLe?: Date | string
-  canal?: string
 }
 
 export type LogRelanceCreateOrConnectWithoutAbonnementInput = {
@@ -410,36 +454,46 @@ export type LogRelanceScalarWhereInput = {
   id?: Prisma.StringFilter<"LogRelance"> | string
   abonnementId?: Prisma.StringFilter<"LogRelance"> | string
   type?: Prisma.EnumTypeRelanceFilter<"LogRelance"> | $Enums.TypeRelance
+  canal?: Prisma.EnumCanalRelanceFilter<"LogRelance"> | $Enums.CanalRelance
+  statutEnvoi?: Prisma.StringFilter<"LogRelance"> | string
+  erreur?: Prisma.StringNullableFilter<"LogRelance"> | string | null
   envoyeLe?: Prisma.DateTimeFilter<"LogRelance"> | Date | string
-  canal?: Prisma.StringFilter<"LogRelance"> | string
 }
 
 export type LogRelanceCreateManyAbonnementInput = {
   id?: string
   type: $Enums.TypeRelance
+  canal?: $Enums.CanalRelance
+  statutEnvoi?: string
+  erreur?: string | null
   envoyeLe?: Date | string
-  canal?: string
 }
 
 export type LogRelanceUpdateWithoutAbonnementInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumTypeRelanceFieldUpdateOperationsInput | $Enums.TypeRelance
+  canal?: Prisma.EnumCanalRelanceFieldUpdateOperationsInput | $Enums.CanalRelance
+  statutEnvoi?: Prisma.StringFieldUpdateOperationsInput | string
+  erreur?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   envoyeLe?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  canal?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
 export type LogRelanceUncheckedUpdateWithoutAbonnementInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumTypeRelanceFieldUpdateOperationsInput | $Enums.TypeRelance
+  canal?: Prisma.EnumCanalRelanceFieldUpdateOperationsInput | $Enums.CanalRelance
+  statutEnvoi?: Prisma.StringFieldUpdateOperationsInput | string
+  erreur?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   envoyeLe?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  canal?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
 export type LogRelanceUncheckedUpdateManyWithoutAbonnementInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumTypeRelanceFieldUpdateOperationsInput | $Enums.TypeRelance
+  canal?: Prisma.EnumCanalRelanceFieldUpdateOperationsInput | $Enums.CanalRelance
+  statutEnvoi?: Prisma.StringFieldUpdateOperationsInput | string
+  erreur?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   envoyeLe?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  canal?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
 
@@ -448,8 +502,10 @@ export type LogRelanceSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   id?: boolean
   abonnementId?: boolean
   type?: boolean
-  envoyeLe?: boolean
   canal?: boolean
+  statutEnvoi?: boolean
+  erreur?: boolean
+  envoyeLe?: boolean
   abonnement?: boolean | Prisma.AbonnementDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["logRelance"]>
 
@@ -457,8 +513,10 @@ export type LogRelanceSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ex
   id?: boolean
   abonnementId?: boolean
   type?: boolean
-  envoyeLe?: boolean
   canal?: boolean
+  statutEnvoi?: boolean
+  erreur?: boolean
+  envoyeLe?: boolean
   abonnement?: boolean | Prisma.AbonnementDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["logRelance"]>
 
@@ -466,8 +524,10 @@ export type LogRelanceSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ex
   id?: boolean
   abonnementId?: boolean
   type?: boolean
-  envoyeLe?: boolean
   canal?: boolean
+  statutEnvoi?: boolean
+  erreur?: boolean
+  envoyeLe?: boolean
   abonnement?: boolean | Prisma.AbonnementDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["logRelance"]>
 
@@ -475,11 +535,13 @@ export type LogRelanceSelectScalar = {
   id?: boolean
   abonnementId?: boolean
   type?: boolean
-  envoyeLe?: boolean
   canal?: boolean
+  statutEnvoi?: boolean
+  erreur?: boolean
+  envoyeLe?: boolean
 }
 
-export type LogRelanceOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "abonnementId" | "type" | "envoyeLe" | "canal", ExtArgs["result"]["logRelance"]>
+export type LogRelanceOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "abonnementId" | "type" | "canal" | "statutEnvoi" | "erreur" | "envoyeLe", ExtArgs["result"]["logRelance"]>
 export type LogRelanceInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   abonnement?: boolean | Prisma.AbonnementDefaultArgs<ExtArgs>
 }
@@ -499,8 +561,10 @@ export type $LogRelancePayload<ExtArgs extends runtime.Types.Extensions.Internal
     id: string
     abonnementId: string
     type: $Enums.TypeRelance
+    canal: $Enums.CanalRelance
+    statutEnvoi: string
+    erreur: string | null
     envoyeLe: Date
-    canal: string
   }, ExtArgs["result"]["logRelance"]>
   composites: {}
 }
@@ -928,8 +992,10 @@ export interface LogRelanceFieldRefs {
   readonly id: Prisma.FieldRef<"LogRelance", 'String'>
   readonly abonnementId: Prisma.FieldRef<"LogRelance", 'String'>
   readonly type: Prisma.FieldRef<"LogRelance", 'TypeRelance'>
+  readonly canal: Prisma.FieldRef<"LogRelance", 'CanalRelance'>
+  readonly statutEnvoi: Prisma.FieldRef<"LogRelance", 'String'>
+  readonly erreur: Prisma.FieldRef<"LogRelance", 'String'>
   readonly envoyeLe: Prisma.FieldRef<"LogRelance", 'DateTime'>
-  readonly canal: Prisma.FieldRef<"LogRelance", 'String'>
 }
     
 

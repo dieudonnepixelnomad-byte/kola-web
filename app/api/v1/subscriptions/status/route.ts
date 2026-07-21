@@ -21,19 +21,20 @@ export async function GET(req: Request) {
   }
   const { cle, identifiantExterne, offre: offreSlug } = parsed.data;
 
-  const tenant = await prisma.tenant.findUnique({ where: { cleApiPublique: cle } });
-  if (!tenant) {
+  const app = await prisma.app.findUnique({ where: { cleApiPublique: cle } });
+  if (!app) {
     return NextResponse.json({ error: "Cle invalide" }, { status: 401 });
   }
+  const tenantId = app.tenantId;
 
   const abonne = await prisma.abonne.upsert({
-    where: { tenantId_identifiantExterne: { tenantId: tenant.id, identifiantExterne } },
+    where: { tenantId_identifiantExterne: { tenantId, identifiantExterne } },
     update: {},
-    create: { tenantId: tenant.id, identifiantExterne },
+    create: { tenantId, identifiantExterne },
   });
 
   const offre = await prisma.offre.findFirst({
-    where: { slug: offreSlug, app: { tenantId: tenant.id } },
+    where: { slug: offreSlug, appId: app.id },
   });
   if (!offre) {
     return NextResponse.json({ error: "Offre introuvable" }, { status: 404 });
@@ -56,7 +57,7 @@ export async function GET(req: Request) {
   const token = signerToken({
     identifiantExterne,
     offreSlug,
-    tenantId: tenant.id,
+    tenantId,
     actif,
     dateEcheance,
   });

@@ -1,15 +1,17 @@
 import { NextResponse } from "next/server";
-import { headers } from "next/headers";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { contexteTenant, TenantAuthError } from "@/lib/tenant";
 import type { StatutAbonnement } from "@/lib/generated/prisma/enums";
 
 const STATUTS_VALIDES: StatutAbonnement[] = ["ACTIF", "TOLERANCE", "COUPE", "EXPIRE"];
 
 export async function GET(req: Request) {
-  const session = await auth.api.getSession({ headers: await headers() });
-  if (!session) {
-    return NextResponse.json({ error: "Non autorise" }, { status: 401 });
+  let ctx;
+  try {
+    ctx = await contexteTenant();
+  } catch (e) {
+    if (e instanceof TenantAuthError) return NextResponse.json({ error: e.message }, { status: e.status });
+    throw e;
   }
 
   const { searchParams } = new URL(req.url);
@@ -20,7 +22,7 @@ export async function GET(req: Request) {
       : undefined;
 
   const abonnements = await prisma.abonnement.findMany({
-    where: statut ? { statut } : undefined,
+    where: { ...(statut ? { statut } : {}), abonne: { tenantId: ctx.tenantId } },
     include: {
       abonne: true,
       offre: true,

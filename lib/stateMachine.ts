@@ -1,6 +1,7 @@
 import { prisma } from "./prisma";
-import { decrypt } from "./crypto";
-import { verifierTransaction } from "./campay";
+import { configPourOffre, getPrestataire } from "./paiement/factory";
+import { envoyerRelance } from "./relances/dispatch";
+import { enqueuerEvenement } from "./webhooksSortants";
 
 function addDays(date: Date, days: number): Date {
   const result = new Date(date);
@@ -12,12 +13,12 @@ function addDays(date: Date, days: number): Date {
 // REUSSIE et fait avancer l'Abonnement (statut ACTIF, nouvelle dateEcheance).
 // Idempotent : no-op si la Transaction est deja REUSSIE.
 export async function appliquerPaiementReussi(transactionId: string, payloadBrut?: unknown) {
-  await prisma.$transaction(async (tx) => {
+  const tenantId = await prisma.$transaction(async (tx) => {
     const transaction = await tx.transaction.findUnique({
       where: { id: transactionId },
-      include: { abonnement: { include: { offre: true } } },
+      include: { abonnement: { include: { offre: { include: { app: true } } } } },
     });
-    if (!transaction || transaction.statut === "REUSSIE") return;
+    if (!transaction || transaction.statut === "REUSSIE") return null;
 
     const now = new Date();
     const { abonnement } = transaction;
@@ -41,18 +42,26 @@ export async function appliquerPaiementReussi(transactionId: string, payloadBrut
         dateActivation: abonnement.dateActivation ?? now,
       },
     });
+
+    return abonnement.offre.app.tenantId;
   });
+
+  if (tenantId) {
+    await enqueuerEvenement(tenantId, "transaction.reussie", { transactionId });
+    await enqueuerEvenement(tenantId, "abonnement.active", { transactionId });
+  }
 }
 
-// §6.3.2 — avance chaque Abonnement dans le temps (relances + transitions de statut).
+// §7 — avance chaque Abonnement dans le temps (relances + transitions de statut).
 export async function avancerAbonnements() {
   const now = new Date();
   const abonnements = await prisma.abonnement.findMany({
     where: { statut: { not: "EXPIRE" } },
-    include: { offre: true, logsRelance: true },
+    include: { offre: { include: { app: true } }, logsRelance: true },
   });
 
   let relancesJMoins3 = 0;
+  let relancesJEcheance = 0;
   let passesEnTolerance = 0;
   let passesEnCoupe = 0;
   let relancesJPlus7 = 0;
@@ -70,11 +79,19 @@ export async function avancerAbonnements() {
         (log) => log.type === "J_MOINS_3" && (!abonnement.dateActivation || log.envoyeLe > abonnement.dateActivation)
       );
       if (!dejaRelance3 && echeanceMs - now.getTime() <= troisJoursMs && echeanceMs - now.getTime() > 0) {
-        await prisma.logRelance.create({ data: { abonnementId: abonnement.id, type: "J_MOINS_3" } });
+        await envoyerRelance(abonnement.id, "J_MOINS_3");
         relancesJMoins3++;
       }
       if (now.getTime() >= echeanceMs) {
+        const dejaRelanceEcheance = abonnement.logsRelance.some(
+          (log) => log.type === "J_ECHEANCE" && (!abonnement.dateActivation || log.envoyeLe > abonnement.dateActivation)
+        );
+        if (!dejaRelanceEcheance) {
+          await envoyerRelance(abonnement.id, "J_ECHEANCE");
+          relancesJEcheance++;
+        }
         await prisma.abonnement.update({ where: { id: abonnement.id }, data: { statut: "TOLERANCE" } });
+        await enqueuerEvenement(offre.app.tenantId, "abonnement.tolerance", { abonnementId: abonnement.id });
         passesEnTolerance++;
       }
       continue;
@@ -83,6 +100,7 @@ export async function avancerAbonnements() {
     if (statut === "TOLERANCE") {
       if (now.getTime() >= echeanceMs + toleranceMs) {
         await prisma.abonnement.update({ where: { id: abonnement.id }, data: { statut: "COUPE" } });
+        await enqueuerEvenement(offre.app.tenantId, "abonnement.coupe", { abonnementId: abonnement.id });
         passesEnCoupe++;
       }
       continue;
@@ -95,37 +113,35 @@ export async function avancerAbonnements() {
 
       if (now.getTime() >= echeanceMs + toleranceMs + quatorze14JoursMs) {
         await prisma.abonnement.update({ where: { id: abonnement.id }, data: { statut: "EXPIRE" } });
+        await enqueuerEvenement(offre.app.tenantId, "abonnement.expire", { abonnementId: abonnement.id });
         passesEnExpire++;
       } else if (!dejaRelance7 && now.getTime() >= echeanceMs + toleranceMs + sept7JoursMs) {
-        await prisma.logRelance.create({ data: { abonnementId: abonnement.id, type: "J_PLUS_7" } });
+        await envoyerRelance(abonnement.id, "J_PLUS_7");
         relancesJPlus7++;
       }
     }
   }
 
-  return { relancesJMoins3, passesEnTolerance, passesEnCoupe, relancesJPlus7, passesEnExpire };
+  return { relancesJMoins3, relancesJEcheance, passesEnTolerance, passesEnCoupe, relancesJPlus7, passesEnExpire };
 }
 
-// Rattrape les paiements dont le webhook Campay n'est jamais arrive.
+// Rattrape les paiements dont le webhook n'est jamais arrive (tous
+// prestataires confondus, resolus via lib/paiement/factory).
 export async function reconcilierTransactionsEnAttente() {
   const seuil = new Date(Date.now() - 15 * 60 * 1000);
   const transactions = await prisma.transaction.findMany({
-    where: { statut: "EN_ATTENTE", recuLe: { lt: seuil } },
-    include: { abonnement: { include: { offre: { include: { app: { include: { tenant: true } } } } } } },
+    where: { statut: "EN_ATTENTE", recuLe: { lt: seuil }, providerTransactionId: { not: null } },
+    include: { abonnement: { include: { offre: true } } },
   });
 
   let reconcilies = 0;
   for (const transaction of transactions) {
-    const { tenant } = transaction.abonnement.offre.app;
-    if (!tenant.campayAppId || !tenant.campayAppSecret) continue;
-
-    const campayConfig = {
-      appUsername: decrypt(tenant.campayAppId),
-      appPassword: decrypt(tenant.campayAppSecret),
-    };
+    if (!transaction.providerTransactionId) continue;
 
     try {
-      const { statut } = await verifierTransaction(campayConfig, transaction.providerTransactionId);
+      const config = await configPourOffre(transaction.abonnement.offre.id);
+      const prestataire = getPrestataire(config);
+      const { statut } = await prestataire.verifier(transaction.providerTransactionId);
       if (statut === "SUCCESSFUL") {
         await appliquerPaiementReussi(transaction.id);
         reconcilies++;
@@ -133,7 +149,7 @@ export async function reconcilierTransactionsEnAttente() {
         await prisma.transaction.update({ where: { id: transaction.id }, data: { statut: "ECHOUEE" } });
       }
     } catch {
-      // Erreur reseau/Campay : on retentera au prochain passage du cron.
+      // Erreur reseau/provider/config manquante : on retentera au prochain passage du cron.
       continue;
     }
   }

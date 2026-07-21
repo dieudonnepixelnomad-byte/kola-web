@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const OPERATEURS = [
   { key: "mtn" as const, name: "MTN MoMo", sub: "Mobile Money", abbr: "MTN", color: "#ffcb05", ink: "#1c1c00" },
@@ -24,8 +24,28 @@ export function PayForm({
 }) {
   const [telephone, setTelephone] = useState(telephoneInitial);
   const [operateur, setOperateur] = useState<"mtn" | "orange">("mtn");
-  const [statut, setStatut] = useState<"idle" | "envoi" | "attente" | "erreur">("idle");
+  const [statut, setStatut] = useState<"idle" | "envoi" | "attente" | "confirme" | "erreur">("idle");
   const [erreur, setErreur] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (statut !== "attente") return;
+    const intervalle = setInterval(async () => {
+      try {
+        const res = await fetch(`/api/pay/status?lienPaiement=${lienPaiement}`, { cache: "no-store" });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data.statutAbonnement === "ACTIF" || data.statutTransaction === "REUSSIE") {
+          setStatut("confirme");
+        } else if (data.statutTransaction === "ECHOUEE") {
+          setStatut("erreur");
+          setErreur("Le paiement a échoué. Réessaie.");
+        }
+      } catch {
+        // Erreur reseau ponctuelle : on retente au prochain intervalle.
+      }
+    }, 4000);
+    return () => clearInterval(intervalle);
+  }, [statut, lienPaiement]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -46,6 +66,20 @@ export function PayForm({
       setStatut("erreur");
       setErreur(err instanceof Error ? err.message : "Erreur inconnue");
     }
+  }
+
+  if (statut === "confirme") {
+    return (
+      <div className="pt-1.5 text-center">
+        <div className="mx-auto mb-6 flex h-[74px] w-[74px] items-center justify-center rounded-full bg-kola-actif-bg text-3xl text-kola-actif-fg">
+          ✓
+        </div>
+        <h1 className="mb-2.5 text-xl font-extrabold tracking-tight">Paiement confirmé</h1>
+        <p className="mx-auto max-w-[28ch] text-sm leading-relaxed text-kola-muted">
+          Ton accès {offreNom} est actif. Tu peux fermer cette page et revenir dans l&apos;app.
+        </p>
+      </div>
+    );
   }
 
   if (statut === "attente") {

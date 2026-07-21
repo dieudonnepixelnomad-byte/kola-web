@@ -47,6 +47,11 @@ export { Prisma }
  */
 export type Tenant = Prisma.TenantModel
 /**
+ * Model ConfigurationPaiement
+ * 
+ */
+export type ConfigurationPaiement = Prisma.ConfigurationPaiementModel
+/**
  * Model App
  * 
  */
@@ -72,10 +77,30 @@ export type Abonnement = Prisma.AbonnementModel
  */
 export type Transaction = Prisma.TransactionModel
 /**
+ * Model ModeleRelance
+ * 
+ */
+export type ModeleRelance = Prisma.ModeleRelanceModel
+/**
  * Model LogRelance
  * 
  */
 export type LogRelance = Prisma.LogRelanceModel
+/**
+ * Model WebhookSortant
+ * 
+ */
+export type WebhookSortant = Prisma.WebhookSortantModel
+/**
+ * Model LivraisonWebhook
+ * 
+ */
+export type LivraisonWebhook = Prisma.LivraisonWebhookModel
+/**
+ * Model JournalAudit
+ * 
+ */
+export type JournalAudit = Prisma.JournalAuditModel
 /**
  * Model User
  * 
@@ -96,3 +121,18 @@ export type Account = Prisma.AccountModel
  * 
  */
 export type Verification = Prisma.VerificationModel
+/**
+ * Model Organization
+ * 
+ */
+export type Organization = Prisma.OrganizationModel
+/**
+ * Model Member
+ * 
+ */
+export type Member = Prisma.MemberModel
+/**
+ * Model Invitation
+ * 
+ */
+export type Invitation = Prisma.InvitationModel

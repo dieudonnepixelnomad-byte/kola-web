@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
+import { randomUUID } from "crypto";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { decrypt } from "@/lib/crypto";
-import { initierPaiement } from "@/lib/campay";
+import { configPourOffre, getPrestataire } from "@/lib/paiement/factory";
 
 const bodySchema = z.object({
   lienPaiement: z.string().min(1),
@@ -19,44 +19,40 @@ export async function POST(req: Request) {
 
   const abonnement = await prisma.abonnement.findUnique({
     where: { lienPaiement },
-    include: { offre: { include: { app: { include: { tenant: true } } } } },
+    include: { offre: true },
   });
 
   if (!abonnement) {
     return NextResponse.json({ error: "Abonnement introuvable" }, { status: 404 });
   }
 
-  const { tenant } = abonnement.offre.app;
-  if (!tenant.campayAppId || !tenant.campayAppSecret) {
-    return NextResponse.json({ error: "Configuration Campay manquante" }, { status: 500 });
-  }
-
-  const campayConfig = {
-    appUsername: decrypt(tenant.campayAppId),
-    appPassword: decrypt(tenant.campayAppSecret),
-  };
-
+  let reference = "";
   try {
-    const { reference } = await initierPaiement(campayConfig, {
+    const config = await configPourOffre(abonnement.offre.id);
+    const prestataire = getPrestataire(config);
+
+    reference = randomUUID();
+    const { providerTransactionId, statut } = await prestataire.initier({
       montant: abonnement.offre.prix,
       devise: abonnement.offre.devise,
       telephone,
       description: `Abonnement ${abonnement.offre.nom}`,
-      referenceExterne: `${abonnement.id}:${Date.now()}`,
+      referenceInterne: reference,
     });
 
     await prisma.transaction.create({
       data: {
         abonnementId: abonnement.id,
-        providerTransactionId: reference,
-        provider: "campay",
+        reference,
+        providerTransactionId,
+        provider: prestataire.type,
         montant: abonnement.offre.prix,
-        statut: "EN_ATTENTE",
+        statut: statut === "SUCCESSFUL" ? "REUSSIE" : statut === "FAILED" ? "ECHOUEE" : "EN_ATTENTE",
       },
     });
   } catch {
-    return NextResponse.json({ error: "Echec de l'initiation du paiement Campay" }, { status: 502 });
+    return NextResponse.json({ error: "Echec de l'initiation du paiement" }, { status: 502 });
   }
 
-  return NextResponse.json({ ok: true, message: "En attente de confirmation sur votre telephone" });
+  return NextResponse.json({ ok: true, reference, message: "En attente de confirmation sur votre telephone" });
 }

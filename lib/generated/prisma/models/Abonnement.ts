@@ -510,14 +510,6 @@ export type AbonnementUncheckedUpdateManyWithoutAbonneNestedInput = {
   deleteMany?: Prisma.AbonnementScalarWhereInput | Prisma.AbonnementScalarWhereInput[]
 }
 
-export type EnumStatutAbonnementFieldUpdateOperationsInput = {
-  set?: $Enums.StatutAbonnement
-}
-
-export type NullableDateTimeFieldUpdateOperationsInput = {
-  set?: Date | string | null
-}
-
 export type AbonnementCreateNestedOneWithoutTransactionsInput = {
   create?: Prisma.XOR<Prisma.AbonnementCreateWithoutTransactionsInput, Prisma.AbonnementUncheckedCreateWithoutTransactionsInput>
   connectOrCreate?: Prisma.AbonnementCreateOrConnectWithoutTransactionsInput

@@ -27,33 +27,27 @@ export type AggregateTenant = {
 export type TenantMinAggregateOutputType = {
   id: string | null
   nom: string | null
-  email: string | null
-  cleApiPublique: string | null
-  cleApiPrivee: string | null
-  campayAppId: string | null
-  campayAppSecret: string | null
+  slug: string | null
+  estSysteme: boolean | null
+  statutPlateforme: $Enums.StatutAbonnement | null
   createdAt: Date | null
 }
 
 export type TenantMaxAggregateOutputType = {
   id: string | null
   nom: string | null
-  email: string | null
-  cleApiPublique: string | null
-  cleApiPrivee: string | null
-  campayAppId: string | null
-  campayAppSecret: string | null
+  slug: string | null
+  estSysteme: boolean | null
+  statutPlateforme: $Enums.StatutAbonnement | null
   createdAt: Date | null
 }
 
 export type TenantCountAggregateOutputType = {
   id: number
   nom: number
-  email: number
-  cleApiPublique: number
-  cleApiPrivee: number
-  campayAppId: number
-  campayAppSecret: number
+  slug: number
+  estSysteme: number
+  statutPlateforme: number
   createdAt: number
   _all: number
 }
@@ -62,33 +56,27 @@ export type TenantCountAggregateOutputType = {
 export type TenantMinAggregateInputType = {
   id?: true
   nom?: true
-  email?: true
-  cleApiPublique?: true
-  cleApiPrivee?: true
-  campayAppId?: true
-  campayAppSecret?: true
+  slug?: true
+  estSysteme?: true
+  statutPlateforme?: true
   createdAt?: true
 }
 
 export type TenantMaxAggregateInputType = {
   id?: true
   nom?: true
-  email?: true
-  cleApiPublique?: true
-  cleApiPrivee?: true
-  campayAppId?: true
-  campayAppSecret?: true
+  slug?: true
+  estSysteme?: true
+  statutPlateforme?: true
   createdAt?: true
 }
 
 export type TenantCountAggregateInputType = {
   id?: true
   nom?: true
-  email?: true
-  cleApiPublique?: true
-  cleApiPrivee?: true
-  campayAppId?: true
-  campayAppSecret?: true
+  slug?: true
+  estSysteme?: true
+  statutPlateforme?: true
   createdAt?: true
   _all?: true
 }
@@ -168,11 +156,9 @@ export type TenantGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalA
 export type TenantGroupByOutputType = {
   id: string
   nom: string
-  email: string
-  cleApiPublique: string
-  cleApiPrivee: string
-  campayAppId: string | null
-  campayAppSecret: string | null
+  slug: string
+  estSysteme: boolean
+  statutPlateforme: $Enums.StatutAbonnement
   createdAt: Date
   _count: TenantCountAggregateOutputType | null
   _min: TenantMinAggregateOutputType | null
@@ -200,50 +186,57 @@ export type TenantWhereInput = {
   NOT?: Prisma.TenantWhereInput | Prisma.TenantWhereInput[]
   id?: Prisma.StringFilter<"Tenant"> | string
   nom?: Prisma.StringFilter<"Tenant"> | string
-  email?: Prisma.StringFilter<"Tenant"> | string
-  cleApiPublique?: Prisma.StringFilter<"Tenant"> | string
-  cleApiPrivee?: Prisma.StringFilter<"Tenant"> | string
-  campayAppId?: Prisma.StringNullableFilter<"Tenant"> | string | null
-  campayAppSecret?: Prisma.StringNullableFilter<"Tenant"> | string | null
+  slug?: Prisma.StringFilter<"Tenant"> | string
+  estSysteme?: Prisma.BoolFilter<"Tenant"> | boolean
+  statutPlateforme?: Prisma.EnumStatutAbonnementFilter<"Tenant"> | $Enums.StatutAbonnement
   createdAt?: Prisma.DateTimeFilter<"Tenant"> | Date | string
+  organization?: Prisma.XOR<Prisma.OrganizationScalarRelationFilter, Prisma.OrganizationWhereInput>
   apps?: Prisma.AppListRelationFilter
+  configurations?: Prisma.ConfigurationPaiementListRelationFilter
+  modelesRelance?: Prisma.ModeleRelanceListRelationFilter
+  webhooksSortants?: Prisma.WebhookSortantListRelationFilter
+  journalAudit?: Prisma.JournalAuditListRelationFilter
 }
 
 export type TenantOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   nom?: Prisma.SortOrder
-  email?: Prisma.SortOrder
-  cleApiPublique?: Prisma.SortOrder
-  cleApiPrivee?: Prisma.SortOrder
-  campayAppId?: Prisma.SortOrderInput | Prisma.SortOrder
-  campayAppSecret?: Prisma.SortOrderInput | Prisma.SortOrder
+  slug?: Prisma.SortOrder
+  estSysteme?: Prisma.SortOrder
+  statutPlateforme?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  organization?: Prisma.OrganizationOrderByWithRelationInput
   apps?: Prisma.AppOrderByRelationAggregateInput
+  configurations?: Prisma.ConfigurationPaiementOrderByRelationAggregateInput
+  modelesRelance?: Prisma.ModeleRelanceOrderByRelationAggregateInput
+  webhooksSortants?: Prisma.WebhookSortantOrderByRelationAggregateInput
+  journalAudit?: Prisma.JournalAuditOrderByRelationAggregateInput
 }
 
 export type TenantWhereUniqueInput = Prisma.AtLeast<{
   id?: string
-  email?: string
-  cleApiPublique?: string
-  cleApiPrivee?: string
+  slug?: string
   AND?: Prisma.TenantWhereInput | Prisma.TenantWhereInput[]
   OR?: Prisma.TenantWhereInput[]
   NOT?: Prisma.TenantWhereInput | Prisma.TenantWhereInput[]
   nom?: Prisma.StringFilter<"Tenant"> | string
-  campayAppId?: Prisma.StringNullableFilter<"Tenant"> | string | null
-  campayAppSecret?: Prisma.StringNullableFilter<"Tenant"> | string | null
+  estSysteme?: Prisma.BoolFilter<"Tenant"> | boolean
+  statutPlateforme?: Prisma.EnumStatutAbonnementFilter<"Tenant"> | $Enums.StatutAbonnement
   createdAt?: Prisma.DateTimeFilter<"Tenant"> | Date | string
+  organization?: Prisma.XOR<Prisma.OrganizationScalarRelationFilter, Prisma.OrganizationWhereInput>
   apps?: Prisma.AppListRelationFilter
-}, "id" | "email" | "cleApiPublique" | "cleApiPrivee">
+  configurations?: Prisma.ConfigurationPaiementListRelationFilter
+  modelesRelance?: Prisma.ModeleRelanceListRelationFilter
+  webhooksSortants?: Prisma.WebhookSortantListRelationFilter
+  journalAudit?: Prisma.JournalAuditListRelationFilter
+}, "id" | "slug">
 
 export type TenantOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   nom?: Prisma.SortOrder
-  email?: Prisma.SortOrder
-  cleApiPublique?: Prisma.SortOrder
-  cleApiPrivee?: Prisma.SortOrder
-  campayAppId?: Prisma.SortOrderInput | Prisma.SortOrder
-  campayAppSecret?: Prisma.SortOrderInput | Prisma.SortOrder
+  slug?: Prisma.SortOrder
+  estSysteme?: Prisma.SortOrder
+  statutPlateforme?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.TenantCountOrderByAggregateInput
   _max?: Prisma.TenantMaxOrderByAggregateInput
@@ -256,125 +249,118 @@ export type TenantScalarWhereWithAggregatesInput = {
   NOT?: Prisma.TenantScalarWhereWithAggregatesInput | Prisma.TenantScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"Tenant"> | string
   nom?: Prisma.StringWithAggregatesFilter<"Tenant"> | string
-  email?: Prisma.StringWithAggregatesFilter<"Tenant"> | string
-  cleApiPublique?: Prisma.StringWithAggregatesFilter<"Tenant"> | string
-  cleApiPrivee?: Prisma.StringWithAggregatesFilter<"Tenant"> | string
-  campayAppId?: Prisma.StringNullableWithAggregatesFilter<"Tenant"> | string | null
-  campayAppSecret?: Prisma.StringNullableWithAggregatesFilter<"Tenant"> | string | null
+  slug?: Prisma.StringWithAggregatesFilter<"Tenant"> | string
+  estSysteme?: Prisma.BoolWithAggregatesFilter<"Tenant"> | boolean
+  statutPlateforme?: Prisma.EnumStatutAbonnementWithAggregatesFilter<"Tenant"> | $Enums.StatutAbonnement
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Tenant"> | Date | string
 }
 
 export type TenantCreateInput = {
-  id?: string
   nom: string
-  email: string
-  cleApiPublique?: string
-  cleApiPrivee?: string
-  campayAppId?: string | null
-  campayAppSecret?: string | null
+  slug: string
+  estSysteme?: boolean
+  statutPlateforme?: $Enums.StatutAbonnement
   createdAt?: Date | string
+  organization: Prisma.OrganizationCreateNestedOneWithoutTenantInput
   apps?: Prisma.AppCreateNestedManyWithoutTenantInput
+  configurations?: Prisma.ConfigurationPaiementCreateNestedManyWithoutTenantInput
+  modelesRelance?: Prisma.ModeleRelanceCreateNestedManyWithoutTenantInput
+  webhooksSortants?: Prisma.WebhookSortantCreateNestedManyWithoutTenantInput
+  journalAudit?: Prisma.JournalAuditCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateInput = {
-  id?: string
+  id: string
   nom: string
-  email: string
-  cleApiPublique?: string
-  cleApiPrivee?: string
-  campayAppId?: string | null
-  campayAppSecret?: string | null
+  slug: string
+  estSysteme?: boolean
+  statutPlateforme?: $Enums.StatutAbonnement
   createdAt?: Date | string
   apps?: Prisma.AppUncheckedCreateNestedManyWithoutTenantInput
+  configurations?: Prisma.ConfigurationPaiementUncheckedCreateNestedManyWithoutTenantInput
+  modelesRelance?: Prisma.ModeleRelanceUncheckedCreateNestedManyWithoutTenantInput
+  webhooksSortants?: Prisma.WebhookSortantUncheckedCreateNestedManyWithoutTenantInput
+  journalAudit?: Prisma.JournalAuditUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   nom?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  cleApiPublique?: Prisma.StringFieldUpdateOperationsInput | string
-  cleApiPrivee?: Prisma.StringFieldUpdateOperationsInput | string
-  campayAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  campayAppSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  estSysteme?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  statutPlateforme?: Prisma.EnumStatutAbonnementFieldUpdateOperationsInput | $Enums.StatutAbonnement
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  organization?: Prisma.OrganizationUpdateOneRequiredWithoutTenantNestedInput
   apps?: Prisma.AppUpdateManyWithoutTenantNestedInput
+  configurations?: Prisma.ConfigurationPaiementUpdateManyWithoutTenantNestedInput
+  modelesRelance?: Prisma.ModeleRelanceUpdateManyWithoutTenantNestedInput
+  webhooksSortants?: Prisma.WebhookSortantUpdateManyWithoutTenantNestedInput
+  journalAudit?: Prisma.JournalAuditUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   nom?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  cleApiPublique?: Prisma.StringFieldUpdateOperationsInput | string
-  cleApiPrivee?: Prisma.StringFieldUpdateOperationsInput | string
-  campayAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  campayAppSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  estSysteme?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  statutPlateforme?: Prisma.EnumStatutAbonnementFieldUpdateOperationsInput | $Enums.StatutAbonnement
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   apps?: Prisma.AppUncheckedUpdateManyWithoutTenantNestedInput
+  configurations?: Prisma.ConfigurationPaiementUncheckedUpdateManyWithoutTenantNestedInput
+  modelesRelance?: Prisma.ModeleRelanceUncheckedUpdateManyWithoutTenantNestedInput
+  webhooksSortants?: Prisma.WebhookSortantUncheckedUpdateManyWithoutTenantNestedInput
+  journalAudit?: Prisma.JournalAuditUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateManyInput = {
-  id?: string
+  id: string
   nom: string
-  email: string
-  cleApiPublique?: string
-  cleApiPrivee?: string
-  campayAppId?: string | null
-  campayAppSecret?: string | null
+  slug: string
+  estSysteme?: boolean
+  statutPlateforme?: $Enums.StatutAbonnement
   createdAt?: Date | string
 }
 
 export type TenantUpdateManyMutationInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   nom?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  cleApiPublique?: Prisma.StringFieldUpdateOperationsInput | string
-  cleApiPrivee?: Prisma.StringFieldUpdateOperationsInput | string
-  campayAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  campayAppSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  estSysteme?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  statutPlateforme?: Prisma.EnumStatutAbonnementFieldUpdateOperationsInput | $Enums.StatutAbonnement
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type TenantUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   nom?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  cleApiPublique?: Prisma.StringFieldUpdateOperationsInput | string
-  cleApiPrivee?: Prisma.StringFieldUpdateOperationsInput | string
-  campayAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  campayAppSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  estSysteme?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  statutPlateforme?: Prisma.EnumStatutAbonnementFieldUpdateOperationsInput | $Enums.StatutAbonnement
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type TenantCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   nom?: Prisma.SortOrder
-  email?: Prisma.SortOrder
-  cleApiPublique?: Prisma.SortOrder
-  cleApiPrivee?: Prisma.SortOrder
-  campayAppId?: Prisma.SortOrder
-  campayAppSecret?: Prisma.SortOrder
+  slug?: Prisma.SortOrder
+  estSysteme?: Prisma.SortOrder
+  statutPlateforme?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
 export type TenantMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   nom?: Prisma.SortOrder
-  email?: Prisma.SortOrder
-  cleApiPublique?: Prisma.SortOrder
-  cleApiPrivee?: Prisma.SortOrder
-  campayAppId?: Prisma.SortOrder
-  campayAppSecret?: Prisma.SortOrder
+  slug?: Prisma.SortOrder
+  estSysteme?: Prisma.SortOrder
+  statutPlateforme?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
 export type TenantMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   nom?: Prisma.SortOrder
-  email?: Prisma.SortOrder
-  cleApiPublique?: Prisma.SortOrder
-  cleApiPrivee?: Prisma.SortOrder
-  campayAppId?: Prisma.SortOrder
-  campayAppSecret?: Prisma.SortOrder
+  slug?: Prisma.SortOrder
+  estSysteme?: Prisma.SortOrder
+  statutPlateforme?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -383,16 +369,39 @@ export type TenantScalarRelationFilter = {
   isNot?: Prisma.TenantWhereInput
 }
 
+export type TenantNullableScalarRelationFilter = {
+  is?: Prisma.TenantWhereInput | null
+  isNot?: Prisma.TenantWhereInput | null
+}
+
 export type StringFieldUpdateOperationsInput = {
   set?: string
 }
 
-export type NullableStringFieldUpdateOperationsInput = {
-  set?: string | null
+export type BoolFieldUpdateOperationsInput = {
+  set?: boolean
+}
+
+export type EnumStatutAbonnementFieldUpdateOperationsInput = {
+  set?: $Enums.StatutAbonnement
 }
 
 export type DateTimeFieldUpdateOperationsInput = {
   set?: Date | string
+}
+
+export type TenantCreateNestedOneWithoutConfigurationsInput = {
+  create?: Prisma.XOR<Prisma.TenantCreateWithoutConfigurationsInput, Prisma.TenantUncheckedCreateWithoutConfigurationsInput>
+  connectOrCreate?: Prisma.TenantCreateOrConnectWithoutConfigurationsInput
+  connect?: Prisma.TenantWhereUniqueInput
+}
+
+export type TenantUpdateOneRequiredWithoutConfigurationsNestedInput = {
+  create?: Prisma.XOR<Prisma.TenantCreateWithoutConfigurationsInput, Prisma.TenantUncheckedCreateWithoutConfigurationsInput>
+  connectOrCreate?: Prisma.TenantCreateOrConnectWithoutConfigurationsInput
+  upsert?: Prisma.TenantUpsertWithoutConfigurationsInput
+  connect?: Prisma.TenantWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.TenantUpdateToOneWithWhereWithoutConfigurationsInput, Prisma.TenantUpdateWithoutConfigurationsInput>, Prisma.TenantUncheckedUpdateWithoutConfigurationsInput>
 }
 
 export type TenantCreateNestedOneWithoutAppsInput = {
@@ -409,26 +418,172 @@ export type TenantUpdateOneRequiredWithoutAppsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.TenantUpdateToOneWithWhereWithoutAppsInput, Prisma.TenantUpdateWithoutAppsInput>, Prisma.TenantUncheckedUpdateWithoutAppsInput>
 }
 
-export type TenantCreateWithoutAppsInput = {
-  id?: string
+export type TenantCreateNestedOneWithoutModelesRelanceInput = {
+  create?: Prisma.XOR<Prisma.TenantCreateWithoutModelesRelanceInput, Prisma.TenantUncheckedCreateWithoutModelesRelanceInput>
+  connectOrCreate?: Prisma.TenantCreateOrConnectWithoutModelesRelanceInput
+  connect?: Prisma.TenantWhereUniqueInput
+}
+
+export type TenantUpdateOneRequiredWithoutModelesRelanceNestedInput = {
+  create?: Prisma.XOR<Prisma.TenantCreateWithoutModelesRelanceInput, Prisma.TenantUncheckedCreateWithoutModelesRelanceInput>
+  connectOrCreate?: Prisma.TenantCreateOrConnectWithoutModelesRelanceInput
+  upsert?: Prisma.TenantUpsertWithoutModelesRelanceInput
+  connect?: Prisma.TenantWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.TenantUpdateToOneWithWhereWithoutModelesRelanceInput, Prisma.TenantUpdateWithoutModelesRelanceInput>, Prisma.TenantUncheckedUpdateWithoutModelesRelanceInput>
+}
+
+export type TenantCreateNestedOneWithoutWebhooksSortantsInput = {
+  create?: Prisma.XOR<Prisma.TenantCreateWithoutWebhooksSortantsInput, Prisma.TenantUncheckedCreateWithoutWebhooksSortantsInput>
+  connectOrCreate?: Prisma.TenantCreateOrConnectWithoutWebhooksSortantsInput
+  connect?: Prisma.TenantWhereUniqueInput
+}
+
+export type TenantUpdateOneRequiredWithoutWebhooksSortantsNestedInput = {
+  create?: Prisma.XOR<Prisma.TenantCreateWithoutWebhooksSortantsInput, Prisma.TenantUncheckedCreateWithoutWebhooksSortantsInput>
+  connectOrCreate?: Prisma.TenantCreateOrConnectWithoutWebhooksSortantsInput
+  upsert?: Prisma.TenantUpsertWithoutWebhooksSortantsInput
+  connect?: Prisma.TenantWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.TenantUpdateToOneWithWhereWithoutWebhooksSortantsInput, Prisma.TenantUpdateWithoutWebhooksSortantsInput>, Prisma.TenantUncheckedUpdateWithoutWebhooksSortantsInput>
+}
+
+export type TenantCreateNestedOneWithoutJournalAuditInput = {
+  create?: Prisma.XOR<Prisma.TenantCreateWithoutJournalAuditInput, Prisma.TenantUncheckedCreateWithoutJournalAuditInput>
+  connectOrCreate?: Prisma.TenantCreateOrConnectWithoutJournalAuditInput
+  connect?: Prisma.TenantWhereUniqueInput
+}
+
+export type TenantUpdateOneRequiredWithoutJournalAuditNestedInput = {
+  create?: Prisma.XOR<Prisma.TenantCreateWithoutJournalAuditInput, Prisma.TenantUncheckedCreateWithoutJournalAuditInput>
+  connectOrCreate?: Prisma.TenantCreateOrConnectWithoutJournalAuditInput
+  upsert?: Prisma.TenantUpsertWithoutJournalAuditInput
+  connect?: Prisma.TenantWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.TenantUpdateToOneWithWhereWithoutJournalAuditInput, Prisma.TenantUpdateWithoutJournalAuditInput>, Prisma.TenantUncheckedUpdateWithoutJournalAuditInput>
+}
+
+export type TenantCreateNestedOneWithoutOrganizationInput = {
+  create?: Prisma.XOR<Prisma.TenantCreateWithoutOrganizationInput, Prisma.TenantUncheckedCreateWithoutOrganizationInput>
+  connectOrCreate?: Prisma.TenantCreateOrConnectWithoutOrganizationInput
+  connect?: Prisma.TenantWhereUniqueInput
+}
+
+export type TenantUncheckedCreateNestedOneWithoutOrganizationInput = {
+  create?: Prisma.XOR<Prisma.TenantCreateWithoutOrganizationInput, Prisma.TenantUncheckedCreateWithoutOrganizationInput>
+  connectOrCreate?: Prisma.TenantCreateOrConnectWithoutOrganizationInput
+  connect?: Prisma.TenantWhereUniqueInput
+}
+
+export type TenantUpdateOneWithoutOrganizationNestedInput = {
+  create?: Prisma.XOR<Prisma.TenantCreateWithoutOrganizationInput, Prisma.TenantUncheckedCreateWithoutOrganizationInput>
+  connectOrCreate?: Prisma.TenantCreateOrConnectWithoutOrganizationInput
+  upsert?: Prisma.TenantUpsertWithoutOrganizationInput
+  disconnect?: Prisma.TenantWhereInput | boolean
+  delete?: Prisma.TenantWhereInput | boolean
+  connect?: Prisma.TenantWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.TenantUpdateToOneWithWhereWithoutOrganizationInput, Prisma.TenantUpdateWithoutOrganizationInput>, Prisma.TenantUncheckedUpdateWithoutOrganizationInput>
+}
+
+export type TenantUncheckedUpdateOneWithoutOrganizationNestedInput = {
+  create?: Prisma.XOR<Prisma.TenantCreateWithoutOrganizationInput, Prisma.TenantUncheckedCreateWithoutOrganizationInput>
+  connectOrCreate?: Prisma.TenantCreateOrConnectWithoutOrganizationInput
+  upsert?: Prisma.TenantUpsertWithoutOrganizationInput
+  disconnect?: Prisma.TenantWhereInput | boolean
+  delete?: Prisma.TenantWhereInput | boolean
+  connect?: Prisma.TenantWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.TenantUpdateToOneWithWhereWithoutOrganizationInput, Prisma.TenantUpdateWithoutOrganizationInput>, Prisma.TenantUncheckedUpdateWithoutOrganizationInput>
+}
+
+export type TenantCreateWithoutConfigurationsInput = {
   nom: string
-  email: string
-  cleApiPublique?: string
-  cleApiPrivee?: string
-  campayAppId?: string | null
-  campayAppSecret?: string | null
+  slug: string
+  estSysteme?: boolean
+  statutPlateforme?: $Enums.StatutAbonnement
   createdAt?: Date | string
+  organization: Prisma.OrganizationCreateNestedOneWithoutTenantInput
+  apps?: Prisma.AppCreateNestedManyWithoutTenantInput
+  modelesRelance?: Prisma.ModeleRelanceCreateNestedManyWithoutTenantInput
+  webhooksSortants?: Prisma.WebhookSortantCreateNestedManyWithoutTenantInput
+  journalAudit?: Prisma.JournalAuditCreateNestedManyWithoutTenantInput
+}
+
+export type TenantUncheckedCreateWithoutConfigurationsInput = {
+  id: string
+  nom: string
+  slug: string
+  estSysteme?: boolean
+  statutPlateforme?: $Enums.StatutAbonnement
+  createdAt?: Date | string
+  apps?: Prisma.AppUncheckedCreateNestedManyWithoutTenantInput
+  modelesRelance?: Prisma.ModeleRelanceUncheckedCreateNestedManyWithoutTenantInput
+  webhooksSortants?: Prisma.WebhookSortantUncheckedCreateNestedManyWithoutTenantInput
+  journalAudit?: Prisma.JournalAuditUncheckedCreateNestedManyWithoutTenantInput
+}
+
+export type TenantCreateOrConnectWithoutConfigurationsInput = {
+  where: Prisma.TenantWhereUniqueInput
+  create: Prisma.XOR<Prisma.TenantCreateWithoutConfigurationsInput, Prisma.TenantUncheckedCreateWithoutConfigurationsInput>
+}
+
+export type TenantUpsertWithoutConfigurationsInput = {
+  update: Prisma.XOR<Prisma.TenantUpdateWithoutConfigurationsInput, Prisma.TenantUncheckedUpdateWithoutConfigurationsInput>
+  create: Prisma.XOR<Prisma.TenantCreateWithoutConfigurationsInput, Prisma.TenantUncheckedCreateWithoutConfigurationsInput>
+  where?: Prisma.TenantWhereInput
+}
+
+export type TenantUpdateToOneWithWhereWithoutConfigurationsInput = {
+  where?: Prisma.TenantWhereInput
+  data: Prisma.XOR<Prisma.TenantUpdateWithoutConfigurationsInput, Prisma.TenantUncheckedUpdateWithoutConfigurationsInput>
+}
+
+export type TenantUpdateWithoutConfigurationsInput = {
+  nom?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  estSysteme?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  statutPlateforme?: Prisma.EnumStatutAbonnementFieldUpdateOperationsInput | $Enums.StatutAbonnement
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  organization?: Prisma.OrganizationUpdateOneRequiredWithoutTenantNestedInput
+  apps?: Prisma.AppUpdateManyWithoutTenantNestedInput
+  modelesRelance?: Prisma.ModeleRelanceUpdateManyWithoutTenantNestedInput
+  webhooksSortants?: Prisma.WebhookSortantUpdateManyWithoutTenantNestedInput
+  journalAudit?: Prisma.JournalAuditUpdateManyWithoutTenantNestedInput
+}
+
+export type TenantUncheckedUpdateWithoutConfigurationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  nom?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  estSysteme?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  statutPlateforme?: Prisma.EnumStatutAbonnementFieldUpdateOperationsInput | $Enums.StatutAbonnement
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  apps?: Prisma.AppUncheckedUpdateManyWithoutTenantNestedInput
+  modelesRelance?: Prisma.ModeleRelanceUncheckedUpdateManyWithoutTenantNestedInput
+  webhooksSortants?: Prisma.WebhookSortantUncheckedUpdateManyWithoutTenantNestedInput
+  journalAudit?: Prisma.JournalAuditUncheckedUpdateManyWithoutTenantNestedInput
+}
+
+export type TenantCreateWithoutAppsInput = {
+  nom: string
+  slug: string
+  estSysteme?: boolean
+  statutPlateforme?: $Enums.StatutAbonnement
+  createdAt?: Date | string
+  organization: Prisma.OrganizationCreateNestedOneWithoutTenantInput
+  configurations?: Prisma.ConfigurationPaiementCreateNestedManyWithoutTenantInput
+  modelesRelance?: Prisma.ModeleRelanceCreateNestedManyWithoutTenantInput
+  webhooksSortants?: Prisma.WebhookSortantCreateNestedManyWithoutTenantInput
+  journalAudit?: Prisma.JournalAuditCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutAppsInput = {
-  id?: string
+  id: string
   nom: string
-  email: string
-  cleApiPublique?: string
-  cleApiPrivee?: string
-  campayAppId?: string | null
-  campayAppSecret?: string | null
+  slug: string
+  estSysteme?: boolean
+  statutPlateforme?: $Enums.StatutAbonnement
   createdAt?: Date | string
+  configurations?: Prisma.ConfigurationPaiementUncheckedCreateNestedManyWithoutTenantInput
+  modelesRelance?: Prisma.ModeleRelanceUncheckedCreateNestedManyWithoutTenantInput
+  webhooksSortants?: Prisma.WebhookSortantUncheckedCreateNestedManyWithoutTenantInput
+  journalAudit?: Prisma.JournalAuditUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutAppsInput = {
@@ -448,25 +603,301 @@ export type TenantUpdateToOneWithWhereWithoutAppsInput = {
 }
 
 export type TenantUpdateWithoutAppsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   nom?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  cleApiPublique?: Prisma.StringFieldUpdateOperationsInput | string
-  cleApiPrivee?: Prisma.StringFieldUpdateOperationsInput | string
-  campayAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  campayAppSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  estSysteme?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  statutPlateforme?: Prisma.EnumStatutAbonnementFieldUpdateOperationsInput | $Enums.StatutAbonnement
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  organization?: Prisma.OrganizationUpdateOneRequiredWithoutTenantNestedInput
+  configurations?: Prisma.ConfigurationPaiementUpdateManyWithoutTenantNestedInput
+  modelesRelance?: Prisma.ModeleRelanceUpdateManyWithoutTenantNestedInput
+  webhooksSortants?: Prisma.WebhookSortantUpdateManyWithoutTenantNestedInput
+  journalAudit?: Prisma.JournalAuditUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutAppsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   nom?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  cleApiPublique?: Prisma.StringFieldUpdateOperationsInput | string
-  cleApiPrivee?: Prisma.StringFieldUpdateOperationsInput | string
-  campayAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  campayAppSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  estSysteme?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  statutPlateforme?: Prisma.EnumStatutAbonnementFieldUpdateOperationsInput | $Enums.StatutAbonnement
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  configurations?: Prisma.ConfigurationPaiementUncheckedUpdateManyWithoutTenantNestedInput
+  modelesRelance?: Prisma.ModeleRelanceUncheckedUpdateManyWithoutTenantNestedInput
+  webhooksSortants?: Prisma.WebhookSortantUncheckedUpdateManyWithoutTenantNestedInput
+  journalAudit?: Prisma.JournalAuditUncheckedUpdateManyWithoutTenantNestedInput
+}
+
+export type TenantCreateWithoutModelesRelanceInput = {
+  nom: string
+  slug: string
+  estSysteme?: boolean
+  statutPlateforme?: $Enums.StatutAbonnement
+  createdAt?: Date | string
+  organization: Prisma.OrganizationCreateNestedOneWithoutTenantInput
+  apps?: Prisma.AppCreateNestedManyWithoutTenantInput
+  configurations?: Prisma.ConfigurationPaiementCreateNestedManyWithoutTenantInput
+  webhooksSortants?: Prisma.WebhookSortantCreateNestedManyWithoutTenantInput
+  journalAudit?: Prisma.JournalAuditCreateNestedManyWithoutTenantInput
+}
+
+export type TenantUncheckedCreateWithoutModelesRelanceInput = {
+  id: string
+  nom: string
+  slug: string
+  estSysteme?: boolean
+  statutPlateforme?: $Enums.StatutAbonnement
+  createdAt?: Date | string
+  apps?: Prisma.AppUncheckedCreateNestedManyWithoutTenantInput
+  configurations?: Prisma.ConfigurationPaiementUncheckedCreateNestedManyWithoutTenantInput
+  webhooksSortants?: Prisma.WebhookSortantUncheckedCreateNestedManyWithoutTenantInput
+  journalAudit?: Prisma.JournalAuditUncheckedCreateNestedManyWithoutTenantInput
+}
+
+export type TenantCreateOrConnectWithoutModelesRelanceInput = {
+  where: Prisma.TenantWhereUniqueInput
+  create: Prisma.XOR<Prisma.TenantCreateWithoutModelesRelanceInput, Prisma.TenantUncheckedCreateWithoutModelesRelanceInput>
+}
+
+export type TenantUpsertWithoutModelesRelanceInput = {
+  update: Prisma.XOR<Prisma.TenantUpdateWithoutModelesRelanceInput, Prisma.TenantUncheckedUpdateWithoutModelesRelanceInput>
+  create: Prisma.XOR<Prisma.TenantCreateWithoutModelesRelanceInput, Prisma.TenantUncheckedCreateWithoutModelesRelanceInput>
+  where?: Prisma.TenantWhereInput
+}
+
+export type TenantUpdateToOneWithWhereWithoutModelesRelanceInput = {
+  where?: Prisma.TenantWhereInput
+  data: Prisma.XOR<Prisma.TenantUpdateWithoutModelesRelanceInput, Prisma.TenantUncheckedUpdateWithoutModelesRelanceInput>
+}
+
+export type TenantUpdateWithoutModelesRelanceInput = {
+  nom?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  estSysteme?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  statutPlateforme?: Prisma.EnumStatutAbonnementFieldUpdateOperationsInput | $Enums.StatutAbonnement
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  organization?: Prisma.OrganizationUpdateOneRequiredWithoutTenantNestedInput
+  apps?: Prisma.AppUpdateManyWithoutTenantNestedInput
+  configurations?: Prisma.ConfigurationPaiementUpdateManyWithoutTenantNestedInput
+  webhooksSortants?: Prisma.WebhookSortantUpdateManyWithoutTenantNestedInput
+  journalAudit?: Prisma.JournalAuditUpdateManyWithoutTenantNestedInput
+}
+
+export type TenantUncheckedUpdateWithoutModelesRelanceInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  nom?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  estSysteme?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  statutPlateforme?: Prisma.EnumStatutAbonnementFieldUpdateOperationsInput | $Enums.StatutAbonnement
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  apps?: Prisma.AppUncheckedUpdateManyWithoutTenantNestedInput
+  configurations?: Prisma.ConfigurationPaiementUncheckedUpdateManyWithoutTenantNestedInput
+  webhooksSortants?: Prisma.WebhookSortantUncheckedUpdateManyWithoutTenantNestedInput
+  journalAudit?: Prisma.JournalAuditUncheckedUpdateManyWithoutTenantNestedInput
+}
+
+export type TenantCreateWithoutWebhooksSortantsInput = {
+  nom: string
+  slug: string
+  estSysteme?: boolean
+  statutPlateforme?: $Enums.StatutAbonnement
+  createdAt?: Date | string
+  organization: Prisma.OrganizationCreateNestedOneWithoutTenantInput
+  apps?: Prisma.AppCreateNestedManyWithoutTenantInput
+  configurations?: Prisma.ConfigurationPaiementCreateNestedManyWithoutTenantInput
+  modelesRelance?: Prisma.ModeleRelanceCreateNestedManyWithoutTenantInput
+  journalAudit?: Prisma.JournalAuditCreateNestedManyWithoutTenantInput
+}
+
+export type TenantUncheckedCreateWithoutWebhooksSortantsInput = {
+  id: string
+  nom: string
+  slug: string
+  estSysteme?: boolean
+  statutPlateforme?: $Enums.StatutAbonnement
+  createdAt?: Date | string
+  apps?: Prisma.AppUncheckedCreateNestedManyWithoutTenantInput
+  configurations?: Prisma.ConfigurationPaiementUncheckedCreateNestedManyWithoutTenantInput
+  modelesRelance?: Prisma.ModeleRelanceUncheckedCreateNestedManyWithoutTenantInput
+  journalAudit?: Prisma.JournalAuditUncheckedCreateNestedManyWithoutTenantInput
+}
+
+export type TenantCreateOrConnectWithoutWebhooksSortantsInput = {
+  where: Prisma.TenantWhereUniqueInput
+  create: Prisma.XOR<Prisma.TenantCreateWithoutWebhooksSortantsInput, Prisma.TenantUncheckedCreateWithoutWebhooksSortantsInput>
+}
+
+export type TenantUpsertWithoutWebhooksSortantsInput = {
+  update: Prisma.XOR<Prisma.TenantUpdateWithoutWebhooksSortantsInput, Prisma.TenantUncheckedUpdateWithoutWebhooksSortantsInput>
+  create: Prisma.XOR<Prisma.TenantCreateWithoutWebhooksSortantsInput, Prisma.TenantUncheckedCreateWithoutWebhooksSortantsInput>
+  where?: Prisma.TenantWhereInput
+}
+
+export type TenantUpdateToOneWithWhereWithoutWebhooksSortantsInput = {
+  where?: Prisma.TenantWhereInput
+  data: Prisma.XOR<Prisma.TenantUpdateWithoutWebhooksSortantsInput, Prisma.TenantUncheckedUpdateWithoutWebhooksSortantsInput>
+}
+
+export type TenantUpdateWithoutWebhooksSortantsInput = {
+  nom?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  estSysteme?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  statutPlateforme?: Prisma.EnumStatutAbonnementFieldUpdateOperationsInput | $Enums.StatutAbonnement
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  organization?: Prisma.OrganizationUpdateOneRequiredWithoutTenantNestedInput
+  apps?: Prisma.AppUpdateManyWithoutTenantNestedInput
+  configurations?: Prisma.ConfigurationPaiementUpdateManyWithoutTenantNestedInput
+  modelesRelance?: Prisma.ModeleRelanceUpdateManyWithoutTenantNestedInput
+  journalAudit?: Prisma.JournalAuditUpdateManyWithoutTenantNestedInput
+}
+
+export type TenantUncheckedUpdateWithoutWebhooksSortantsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  nom?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  estSysteme?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  statutPlateforme?: Prisma.EnumStatutAbonnementFieldUpdateOperationsInput | $Enums.StatutAbonnement
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  apps?: Prisma.AppUncheckedUpdateManyWithoutTenantNestedInput
+  configurations?: Prisma.ConfigurationPaiementUncheckedUpdateManyWithoutTenantNestedInput
+  modelesRelance?: Prisma.ModeleRelanceUncheckedUpdateManyWithoutTenantNestedInput
+  journalAudit?: Prisma.JournalAuditUncheckedUpdateManyWithoutTenantNestedInput
+}
+
+export type TenantCreateWithoutJournalAuditInput = {
+  nom: string
+  slug: string
+  estSysteme?: boolean
+  statutPlateforme?: $Enums.StatutAbonnement
+  createdAt?: Date | string
+  organization: Prisma.OrganizationCreateNestedOneWithoutTenantInput
+  apps?: Prisma.AppCreateNestedManyWithoutTenantInput
+  configurations?: Prisma.ConfigurationPaiementCreateNestedManyWithoutTenantInput
+  modelesRelance?: Prisma.ModeleRelanceCreateNestedManyWithoutTenantInput
+  webhooksSortants?: Prisma.WebhookSortantCreateNestedManyWithoutTenantInput
+}
+
+export type TenantUncheckedCreateWithoutJournalAuditInput = {
+  id: string
+  nom: string
+  slug: string
+  estSysteme?: boolean
+  statutPlateforme?: $Enums.StatutAbonnement
+  createdAt?: Date | string
+  apps?: Prisma.AppUncheckedCreateNestedManyWithoutTenantInput
+  configurations?: Prisma.ConfigurationPaiementUncheckedCreateNestedManyWithoutTenantInput
+  modelesRelance?: Prisma.ModeleRelanceUncheckedCreateNestedManyWithoutTenantInput
+  webhooksSortants?: Prisma.WebhookSortantUncheckedCreateNestedManyWithoutTenantInput
+}
+
+export type TenantCreateOrConnectWithoutJournalAuditInput = {
+  where: Prisma.TenantWhereUniqueInput
+  create: Prisma.XOR<Prisma.TenantCreateWithoutJournalAuditInput, Prisma.TenantUncheckedCreateWithoutJournalAuditInput>
+}
+
+export type TenantUpsertWithoutJournalAuditInput = {
+  update: Prisma.XOR<Prisma.TenantUpdateWithoutJournalAuditInput, Prisma.TenantUncheckedUpdateWithoutJournalAuditInput>
+  create: Prisma.XOR<Prisma.TenantCreateWithoutJournalAuditInput, Prisma.TenantUncheckedCreateWithoutJournalAuditInput>
+  where?: Prisma.TenantWhereInput
+}
+
+export type TenantUpdateToOneWithWhereWithoutJournalAuditInput = {
+  where?: Prisma.TenantWhereInput
+  data: Prisma.XOR<Prisma.TenantUpdateWithoutJournalAuditInput, Prisma.TenantUncheckedUpdateWithoutJournalAuditInput>
+}
+
+export type TenantUpdateWithoutJournalAuditInput = {
+  nom?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  estSysteme?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  statutPlateforme?: Prisma.EnumStatutAbonnementFieldUpdateOperationsInput | $Enums.StatutAbonnement
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  organization?: Prisma.OrganizationUpdateOneRequiredWithoutTenantNestedInput
+  apps?: Prisma.AppUpdateManyWithoutTenantNestedInput
+  configurations?: Prisma.ConfigurationPaiementUpdateManyWithoutTenantNestedInput
+  modelesRelance?: Prisma.ModeleRelanceUpdateManyWithoutTenantNestedInput
+  webhooksSortants?: Prisma.WebhookSortantUpdateManyWithoutTenantNestedInput
+}
+
+export type TenantUncheckedUpdateWithoutJournalAuditInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  nom?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  estSysteme?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  statutPlateforme?: Prisma.EnumStatutAbonnementFieldUpdateOperationsInput | $Enums.StatutAbonnement
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  apps?: Prisma.AppUncheckedUpdateManyWithoutTenantNestedInput
+  configurations?: Prisma.ConfigurationPaiementUncheckedUpdateManyWithoutTenantNestedInput
+  modelesRelance?: Prisma.ModeleRelanceUncheckedUpdateManyWithoutTenantNestedInput
+  webhooksSortants?: Prisma.WebhookSortantUncheckedUpdateManyWithoutTenantNestedInput
+}
+
+export type TenantCreateWithoutOrganizationInput = {
+  nom: string
+  slug: string
+  estSysteme?: boolean
+  statutPlateforme?: $Enums.StatutAbonnement
+  createdAt?: Date | string
+  apps?: Prisma.AppCreateNestedManyWithoutTenantInput
+  configurations?: Prisma.ConfigurationPaiementCreateNestedManyWithoutTenantInput
+  modelesRelance?: Prisma.ModeleRelanceCreateNestedManyWithoutTenantInput
+  webhooksSortants?: Prisma.WebhookSortantCreateNestedManyWithoutTenantInput
+  journalAudit?: Prisma.JournalAuditCreateNestedManyWithoutTenantInput
+}
+
+export type TenantUncheckedCreateWithoutOrganizationInput = {
+  nom: string
+  slug: string
+  estSysteme?: boolean
+  statutPlateforme?: $Enums.StatutAbonnement
+  createdAt?: Date | string
+  apps?: Prisma.AppUncheckedCreateNestedManyWithoutTenantInput
+  configurations?: Prisma.ConfigurationPaiementUncheckedCreateNestedManyWithoutTenantInput
+  modelesRelance?: Prisma.ModeleRelanceUncheckedCreateNestedManyWithoutTenantInput
+  webhooksSortants?: Prisma.WebhookSortantUncheckedCreateNestedManyWithoutTenantInput
+  journalAudit?: Prisma.JournalAuditUncheckedCreateNestedManyWithoutTenantInput
+}
+
+export type TenantCreateOrConnectWithoutOrganizationInput = {
+  where: Prisma.TenantWhereUniqueInput
+  create: Prisma.XOR<Prisma.TenantCreateWithoutOrganizationInput, Prisma.TenantUncheckedCreateWithoutOrganizationInput>
+}
+
+export type TenantUpsertWithoutOrganizationInput = {
+  update: Prisma.XOR<Prisma.TenantUpdateWithoutOrganizationInput, Prisma.TenantUncheckedUpdateWithoutOrganizationInput>
+  create: Prisma.XOR<Prisma.TenantCreateWithoutOrganizationInput, Prisma.TenantUncheckedCreateWithoutOrganizationInput>
+  where?: Prisma.TenantWhereInput
+}
+
+export type TenantUpdateToOneWithWhereWithoutOrganizationInput = {
+  where?: Prisma.TenantWhereInput
+  data: Prisma.XOR<Prisma.TenantUpdateWithoutOrganizationInput, Prisma.TenantUncheckedUpdateWithoutOrganizationInput>
+}
+
+export type TenantUpdateWithoutOrganizationInput = {
+  nom?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  estSysteme?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  statutPlateforme?: Prisma.EnumStatutAbonnementFieldUpdateOperationsInput | $Enums.StatutAbonnement
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  apps?: Prisma.AppUpdateManyWithoutTenantNestedInput
+  configurations?: Prisma.ConfigurationPaiementUpdateManyWithoutTenantNestedInput
+  modelesRelance?: Prisma.ModeleRelanceUpdateManyWithoutTenantNestedInput
+  webhooksSortants?: Prisma.WebhookSortantUpdateManyWithoutTenantNestedInput
+  journalAudit?: Prisma.JournalAuditUpdateManyWithoutTenantNestedInput
+}
+
+export type TenantUncheckedUpdateWithoutOrganizationInput = {
+  nom?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  estSysteme?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  statutPlateforme?: Prisma.EnumStatutAbonnementFieldUpdateOperationsInput | $Enums.StatutAbonnement
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  apps?: Prisma.AppUncheckedUpdateManyWithoutTenantNestedInput
+  configurations?: Prisma.ConfigurationPaiementUncheckedUpdateManyWithoutTenantNestedInput
+  modelesRelance?: Prisma.ModeleRelanceUncheckedUpdateManyWithoutTenantNestedInput
+  webhooksSortants?: Prisma.WebhookSortantUncheckedUpdateManyWithoutTenantNestedInput
+  journalAudit?: Prisma.JournalAuditUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 
@@ -476,10 +907,18 @@ export type TenantUncheckedUpdateWithoutAppsInput = {
 
 export type TenantCountOutputType = {
   apps: number
+  configurations: number
+  modelesRelance: number
+  webhooksSortants: number
+  journalAudit: number
 }
 
 export type TenantCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   apps?: boolean | TenantCountOutputTypeCountAppsArgs
+  configurations?: boolean | TenantCountOutputTypeCountConfigurationsArgs
+  modelesRelance?: boolean | TenantCountOutputTypeCountModelesRelanceArgs
+  webhooksSortants?: boolean | TenantCountOutputTypeCountWebhooksSortantsArgs
+  journalAudit?: boolean | TenantCountOutputTypeCountJournalAuditArgs
 }
 
 /**
@@ -499,74 +938,113 @@ export type TenantCountOutputTypeCountAppsArgs<ExtArgs extends runtime.Types.Ext
   where?: Prisma.AppWhereInput
 }
 
+/**
+ * TenantCountOutputType without action
+ */
+export type TenantCountOutputTypeCountConfigurationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ConfigurationPaiementWhereInput
+}
+
+/**
+ * TenantCountOutputType without action
+ */
+export type TenantCountOutputTypeCountModelesRelanceArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ModeleRelanceWhereInput
+}
+
+/**
+ * TenantCountOutputType without action
+ */
+export type TenantCountOutputTypeCountWebhooksSortantsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.WebhookSortantWhereInput
+}
+
+/**
+ * TenantCountOutputType without action
+ */
+export type TenantCountOutputTypeCountJournalAuditArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.JournalAuditWhereInput
+}
+
 
 export type TenantSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   nom?: boolean
-  email?: boolean
-  cleApiPublique?: boolean
-  cleApiPrivee?: boolean
-  campayAppId?: boolean
-  campayAppSecret?: boolean
+  slug?: boolean
+  estSysteme?: boolean
+  statutPlateforme?: boolean
   createdAt?: boolean
+  organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   apps?: boolean | Prisma.Tenant$appsArgs<ExtArgs>
+  configurations?: boolean | Prisma.Tenant$configurationsArgs<ExtArgs>
+  modelesRelance?: boolean | Prisma.Tenant$modelesRelanceArgs<ExtArgs>
+  webhooksSortants?: boolean | Prisma.Tenant$webhooksSortantsArgs<ExtArgs>
+  journalAudit?: boolean | Prisma.Tenant$journalAuditArgs<ExtArgs>
   _count?: boolean | Prisma.TenantCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["tenant"]>
 
 export type TenantSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   nom?: boolean
-  email?: boolean
-  cleApiPublique?: boolean
-  cleApiPrivee?: boolean
-  campayAppId?: boolean
-  campayAppSecret?: boolean
+  slug?: boolean
+  estSysteme?: boolean
+  statutPlateforme?: boolean
   createdAt?: boolean
+  organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["tenant"]>
 
 export type TenantSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   nom?: boolean
-  email?: boolean
-  cleApiPublique?: boolean
-  cleApiPrivee?: boolean
-  campayAppId?: boolean
-  campayAppSecret?: boolean
+  slug?: boolean
+  estSysteme?: boolean
+  statutPlateforme?: boolean
   createdAt?: boolean
+  organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["tenant"]>
 
 export type TenantSelectScalar = {
   id?: boolean
   nom?: boolean
-  email?: boolean
-  cleApiPublique?: boolean
-  cleApiPrivee?: boolean
-  campayAppId?: boolean
-  campayAppSecret?: boolean
+  slug?: boolean
+  estSysteme?: boolean
+  statutPlateforme?: boolean
   createdAt?: boolean
 }
 
-export type TenantOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "nom" | "email" | "cleApiPublique" | "cleApiPrivee" | "campayAppId" | "campayAppSecret" | "createdAt", ExtArgs["result"]["tenant"]>
+export type TenantOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "nom" | "slug" | "estSysteme" | "statutPlateforme" | "createdAt", ExtArgs["result"]["tenant"]>
 export type TenantInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   apps?: boolean | Prisma.Tenant$appsArgs<ExtArgs>
+  configurations?: boolean | Prisma.Tenant$configurationsArgs<ExtArgs>
+  modelesRelance?: boolean | Prisma.Tenant$modelesRelanceArgs<ExtArgs>
+  webhooksSortants?: boolean | Prisma.Tenant$webhooksSortantsArgs<ExtArgs>
+  journalAudit?: boolean | Prisma.Tenant$journalAuditArgs<ExtArgs>
   _count?: boolean | Prisma.TenantCountOutputTypeDefaultArgs<ExtArgs>
 }
-export type TenantIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
-export type TenantIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
+export type TenantIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
+}
+export type TenantIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
+}
 
 export type $TenantPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Tenant"
   objects: {
+    organization: Prisma.$OrganizationPayload<ExtArgs>
     apps: Prisma.$AppPayload<ExtArgs>[]
+    configurations: Prisma.$ConfigurationPaiementPayload<ExtArgs>[]
+    modelesRelance: Prisma.$ModeleRelancePayload<ExtArgs>[]
+    webhooksSortants: Prisma.$WebhookSortantPayload<ExtArgs>[]
+    journalAudit: Prisma.$JournalAuditPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     nom: string
-    email: string
-    cleApiPublique: string
-    cleApiPrivee: string
-    campayAppId: string | null
-    campayAppSecret: string | null
+    slug: string
+    estSysteme: boolean
+    statutPlateforme: $Enums.StatutAbonnement
     createdAt: Date
   }, ExtArgs["result"]["tenant"]>
   composites: {}
@@ -962,7 +1440,12 @@ readonly fields: TenantFieldRefs;
  */
 export interface Prisma__TenantClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
+  organization<T extends Prisma.OrganizationDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.OrganizationDefaultArgs<ExtArgs>>): Prisma.Prisma__OrganizationClient<runtime.Types.Result.GetResult<Prisma.$OrganizationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   apps<T extends Prisma.Tenant$appsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tenant$appsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AppPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  configurations<T extends Prisma.Tenant$configurationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tenant$configurationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ConfigurationPaiementPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  modelesRelance<T extends Prisma.Tenant$modelesRelanceArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tenant$modelesRelanceArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ModeleRelancePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  webhooksSortants<T extends Prisma.Tenant$webhooksSortantsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tenant$webhooksSortantsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$WebhookSortantPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  journalAudit<T extends Prisma.Tenant$journalAuditArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tenant$journalAuditArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$JournalAuditPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -994,11 +1477,9 @@ export interface Prisma__TenantClient<T, Null = never, ExtArgs extends runtime.T
 export interface TenantFieldRefs {
   readonly id: Prisma.FieldRef<"Tenant", 'String'>
   readonly nom: Prisma.FieldRef<"Tenant", 'String'>
-  readonly email: Prisma.FieldRef<"Tenant", 'String'>
-  readonly cleApiPublique: Prisma.FieldRef<"Tenant", 'String'>
-  readonly cleApiPrivee: Prisma.FieldRef<"Tenant", 'String'>
-  readonly campayAppId: Prisma.FieldRef<"Tenant", 'String'>
-  readonly campayAppSecret: Prisma.FieldRef<"Tenant", 'String'>
+  readonly slug: Prisma.FieldRef<"Tenant", 'String'>
+  readonly estSysteme: Prisma.FieldRef<"Tenant", 'Boolean'>
+  readonly statutPlateforme: Prisma.FieldRef<"Tenant", 'StatutAbonnement'>
   readonly createdAt: Prisma.FieldRef<"Tenant", 'DateTime'>
 }
     
@@ -1254,6 +1735,10 @@ export type TenantCreateManyAndReturnArgs<ExtArgs extends runtime.Types.Extensio
    */
   data: Prisma.TenantCreateManyInput | Prisma.TenantCreateManyInput[]
   skipDuplicates?: boolean
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.TenantIncludeCreateManyAndReturn<ExtArgs> | null
 }
 
 /**
@@ -1324,6 +1809,10 @@ export type TenantUpdateManyAndReturnArgs<ExtArgs extends runtime.Types.Extensio
    * Limit how many Tenants to update.
    */
   limit?: number
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.TenantIncludeUpdateManyAndReturn<ExtArgs> | null
 }
 
 /**
@@ -1414,6 +1903,102 @@ export type Tenant$appsArgs<ExtArgs extends runtime.Types.Extensions.InternalArg
   take?: number
   skip?: number
   distinct?: Prisma.AppScalarFieldEnum | Prisma.AppScalarFieldEnum[]
+}
+
+/**
+ * Tenant.configurations
+ */
+export type Tenant$configurationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ConfigurationPaiement
+   */
+  select?: Prisma.ConfigurationPaiementSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ConfigurationPaiement
+   */
+  omit?: Prisma.ConfigurationPaiementOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ConfigurationPaiementInclude<ExtArgs> | null
+  where?: Prisma.ConfigurationPaiementWhereInput
+  orderBy?: Prisma.ConfigurationPaiementOrderByWithRelationInput | Prisma.ConfigurationPaiementOrderByWithRelationInput[]
+  cursor?: Prisma.ConfigurationPaiementWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ConfigurationPaiementScalarFieldEnum | Prisma.ConfigurationPaiementScalarFieldEnum[]
+}
+
+/**
+ * Tenant.modelesRelance
+ */
+export type Tenant$modelesRelanceArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ModeleRelance
+   */
+  select?: Prisma.ModeleRelanceSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ModeleRelance
+   */
+  omit?: Prisma.ModeleRelanceOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ModeleRelanceInclude<ExtArgs> | null
+  where?: Prisma.ModeleRelanceWhereInput
+  orderBy?: Prisma.ModeleRelanceOrderByWithRelationInput | Prisma.ModeleRelanceOrderByWithRelationInput[]
+  cursor?: Prisma.ModeleRelanceWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ModeleRelanceScalarFieldEnum | Prisma.ModeleRelanceScalarFieldEnum[]
+}
+
+/**
+ * Tenant.webhooksSortants
+ */
+export type Tenant$webhooksSortantsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the WebhookSortant
+   */
+  select?: Prisma.WebhookSortantSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the WebhookSortant
+   */
+  omit?: Prisma.WebhookSortantOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.WebhookSortantInclude<ExtArgs> | null
+  where?: Prisma.WebhookSortantWhereInput
+  orderBy?: Prisma.WebhookSortantOrderByWithRelationInput | Prisma.WebhookSortantOrderByWithRelationInput[]
+  cursor?: Prisma.WebhookSortantWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.WebhookSortantScalarFieldEnum | Prisma.WebhookSortantScalarFieldEnum[]
+}
+
+/**
+ * Tenant.journalAudit
+ */
+export type Tenant$journalAuditArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the JournalAudit
+   */
+  select?: Prisma.JournalAuditSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the JournalAudit
+   */
+  omit?: Prisma.JournalAuditOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.JournalAuditInclude<ExtArgs> | null
+  where?: Prisma.JournalAuditWhereInput
+  orderBy?: Prisma.JournalAuditOrderByWithRelationInput | Prisma.JournalAuditOrderByWithRelationInput[]
+  cursor?: Prisma.JournalAuditWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.JournalAuditScalarFieldEnum | Prisma.JournalAuditScalarFieldEnum[]
 }
 
 /**

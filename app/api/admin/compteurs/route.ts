@@ -1,16 +1,19 @@
 import { NextResponse } from "next/server";
-import { headers } from "next/headers";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { contexteTenant, TenantAuthError } from "@/lib/tenant";
 
 export async function GET() {
-  const session = await auth.api.getSession({ headers: await headers() });
-  if (!session) {
-    return NextResponse.json({ error: "Non autorise" }, { status: 401 });
+  let ctx;
+  try {
+    ctx = await contexteTenant();
+  } catch (e) {
+    if (e instanceof TenantAuthError) return NextResponse.json({ error: e.message }, { status: e.status });
+    throw e;
   }
 
   const groupes = await prisma.abonnement.groupBy({
     by: ["statut"],
+    where: { abonne: { tenantId: ctx.tenantId } },
     _count: true,
   });
 
@@ -22,6 +25,7 @@ export async function GET() {
   const aRelancer = await prisma.abonnement.count({
     where: {
       statut: "ACTIF",
+      abonne: { tenantId: ctx.tenantId },
       logsRelance: { some: { type: "J_MOINS_3" } },
     },
   });

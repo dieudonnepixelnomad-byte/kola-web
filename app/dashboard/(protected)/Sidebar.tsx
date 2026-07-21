@@ -6,16 +6,23 @@ import { authClient } from "@/lib/auth-client";
 
 const NAV = [
   { href: "/dashboard", label: "Vue d’ensemble", dot: "#3ddc84" },
+  { href: "/dashboard/apps", label: "Apps", dot: "#12a05e" },
   { href: "/dashboard/abonnes", label: "Abonnés", dot: "#7fae97" },
+  { href: "/dashboard/paiements", label: "Paiements", dot: "#9a6206" },
+  { href: "/dashboard/relances", label: "Relances", dot: "#c14a2c" },
+  { href: "/dashboard/parametres/prestataires", label: "Prestataires", dot: "#6f6a5e" },
+  { href: "/dashboard/parametres/webhooks", label: "Webhooks", dot: "#3ddc84" },
+  { href: "/dashboard/parametres/equipe", label: "Équipe", dot: "#0e3b28" },
+  { href: "/dashboard/parametres/facturation", label: "Facturation", dot: "#98917f" },
 ];
 
-export function Sidebar({ userName }: { userName: string }) {
+export function Sidebar({ userName, tenantNom }: { userName: string; tenantNom: string }) {
   const pathname = usePathname();
   const router = useRouter();
 
   async function handleLogout() {
     await authClient.signOut();
-    router.push("/dashboard/login");
+    router.push("/connexion");
   }
 
   const initiales = userName
@@ -42,8 +49,8 @@ export function Sidebar({ userName }: { userName: string }) {
         </div>
         <div className="flex items-center justify-between gap-2">
           <div>
-            <div className="text-sm font-bold text-white">Kola Test App</div>
-            <div className="text-[11px] text-[#8bbaa1]">Android · Premium</div>
+            <div className="text-sm font-bold text-white">{tenantNom}</div>
+            <div className="text-[11px] text-[#8bbaa1]">Tenant</div>
           </div>
         </div>
       </div>

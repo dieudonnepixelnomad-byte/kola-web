@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { avancerAbonnements, reconcilierTransactionsEnAttente } from "@/lib/stateMachine";
+import { synchroniserDogfooding } from "@/lib/dogfooding";
 
 export async function GET(req: Request) {
   const auth = req.headers.get("authorization");
@@ -9,6 +10,7 @@ export async function GET(req: Request) {
 
   const relance = await avancerAbonnements();
   const reconcilies = await reconcilierTransactionsEnAttente();
+  const dogfooding = await synchroniserDogfooding();
 
-  return NextResponse.json({ ok: true, ...relance, reconcilies });
+  return NextResponse.json({ ok: true, ...relance, reconcilies, dogfooding });
 }

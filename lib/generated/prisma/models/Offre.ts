@@ -47,6 +47,8 @@ export type OffreMinAggregateOutputType = {
   devise: string | null
   periodiciteJours: number | null
   toleranceJours: number | null
+  actif: boolean | null
+  configurationId: string | null
   createdAt: Date | null
 }
 
@@ -59,6 +61,8 @@ export type OffreMaxAggregateOutputType = {
   devise: string | null
   periodiciteJours: number | null
   toleranceJours: number | null
+  actif: boolean | null
+  configurationId: string | null
   createdAt: Date | null
 }
 
@@ -71,6 +75,8 @@ export type OffreCountAggregateOutputType = {
   devise: number
   periodiciteJours: number
   toleranceJours: number
+  actif: number
+  configurationId: number
   createdAt: number
   _all: number
 }
@@ -97,6 +103,8 @@ export type OffreMinAggregateInputType = {
   devise?: true
   periodiciteJours?: true
   toleranceJours?: true
+  actif?: true
+  configurationId?: true
   createdAt?: true
 }
 
@@ -109,6 +117,8 @@ export type OffreMaxAggregateInputType = {
   devise?: true
   periodiciteJours?: true
   toleranceJours?: true
+  actif?: true
+  configurationId?: true
   createdAt?: true
 }
 
@@ -121,6 +131,8 @@ export type OffreCountAggregateInputType = {
   devise?: true
   periodiciteJours?: true
   toleranceJours?: true
+  actif?: true
+  configurationId?: true
   createdAt?: true
   _all?: true
 }
@@ -220,6 +232,8 @@ export type OffreGroupByOutputType = {
   devise: string
   periodiciteJours: number
   toleranceJours: number
+  actif: boolean
+  configurationId: string | null
   createdAt: Date
   _count: OffreCountAggregateOutputType | null
   _avg: OffreAvgAggregateOutputType | null
@@ -255,8 +269,11 @@ export type OffreWhereInput = {
   devise?: Prisma.StringFilter<"Offre"> | string
   periodiciteJours?: Prisma.IntFilter<"Offre"> | number
   toleranceJours?: Prisma.IntFilter<"Offre"> | number
+  actif?: Prisma.BoolFilter<"Offre"> | boolean
+  configurationId?: Prisma.StringNullableFilter<"Offre"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Offre"> | Date | string
   app?: Prisma.XOR<Prisma.AppScalarRelationFilter, Prisma.AppWhereInput>
+  configuration?: Prisma.XOR<Prisma.ConfigurationPaiementNullableScalarRelationFilter, Prisma.ConfigurationPaiementWhereInput> | null
   abonnements?: Prisma.AbonnementListRelationFilter
 }
 
@@ -269,8 +286,11 @@ export type OffreOrderByWithRelationInput = {
   devise?: Prisma.SortOrder
   periodiciteJours?: Prisma.SortOrder
   toleranceJours?: Prisma.SortOrder
+  actif?: Prisma.SortOrder
+  configurationId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   app?: Prisma.AppOrderByWithRelationInput
+  configuration?: Prisma.ConfigurationPaiementOrderByWithRelationInput
   abonnements?: Prisma.AbonnementOrderByRelationAggregateInput
 }
 
@@ -287,8 +307,11 @@ export type OffreWhereUniqueInput = Prisma.AtLeast<{
   devise?: Prisma.StringFilter<"Offre"> | string
   periodiciteJours?: Prisma.IntFilter<"Offre"> | number
   toleranceJours?: Prisma.IntFilter<"Offre"> | number
+  actif?: Prisma.BoolFilter<"Offre"> | boolean
+  configurationId?: Prisma.StringNullableFilter<"Offre"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Offre"> | Date | string
   app?: Prisma.XOR<Prisma.AppScalarRelationFilter, Prisma.AppWhereInput>
+  configuration?: Prisma.XOR<Prisma.ConfigurationPaiementNullableScalarRelationFilter, Prisma.ConfigurationPaiementWhereInput> | null
   abonnements?: Prisma.AbonnementListRelationFilter
 }, "id" | "appId_slug">
 
@@ -301,6 +324,8 @@ export type OffreOrderByWithAggregationInput = {
   devise?: Prisma.SortOrder
   periodiciteJours?: Prisma.SortOrder
   toleranceJours?: Prisma.SortOrder
+  actif?: Prisma.SortOrder
+  configurationId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.OffreCountOrderByAggregateInput
   _avg?: Prisma.OffreAvgOrderByAggregateInput
@@ -321,6 +346,8 @@ export type OffreScalarWhereWithAggregatesInput = {
   devise?: Prisma.StringWithAggregatesFilter<"Offre"> | string
   periodiciteJours?: Prisma.IntWithAggregatesFilter<"Offre"> | number
   toleranceJours?: Prisma.IntWithAggregatesFilter<"Offre"> | number
+  actif?: Prisma.BoolWithAggregatesFilter<"Offre"> | boolean
+  configurationId?: Prisma.StringNullableWithAggregatesFilter<"Offre"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Offre"> | Date | string
 }
 
@@ -332,8 +359,10 @@ export type OffreCreateInput = {
   devise?: string
   periodiciteJours?: number
   toleranceJours?: number
+  actif?: boolean
   createdAt?: Date | string
   app: Prisma.AppCreateNestedOneWithoutOffresInput
+  configuration?: Prisma.ConfigurationPaiementCreateNestedOneWithoutOffresInput
   abonnements?: Prisma.AbonnementCreateNestedManyWithoutOffreInput
 }
 
@@ -346,6 +375,8 @@ export type OffreUncheckedCreateInput = {
   devise?: string
   periodiciteJours?: number
   toleranceJours?: number
+  actif?: boolean
+  configurationId?: string | null
   createdAt?: Date | string
   abonnements?: Prisma.AbonnementUncheckedCreateNestedManyWithoutOffreInput
 }
@@ -358,8 +389,10 @@ export type OffreUpdateInput = {
   devise?: Prisma.StringFieldUpdateOperationsInput | string
   periodiciteJours?: Prisma.IntFieldUpdateOperationsInput | number
   toleranceJours?: Prisma.IntFieldUpdateOperationsInput | number
+  actif?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   app?: Prisma.AppUpdateOneRequiredWithoutOffresNestedInput
+  configuration?: Prisma.ConfigurationPaiementUpdateOneWithoutOffresNestedInput
   abonnements?: Prisma.AbonnementUpdateManyWithoutOffreNestedInput
 }
 
@@ -372,6 +405,8 @@ export type OffreUncheckedUpdateInput = {
   devise?: Prisma.StringFieldUpdateOperationsInput | string
   periodiciteJours?: Prisma.IntFieldUpdateOperationsInput | number
   toleranceJours?: Prisma.IntFieldUpdateOperationsInput | number
+  actif?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  configurationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   abonnements?: Prisma.AbonnementUncheckedUpdateManyWithoutOffreNestedInput
 }
@@ -385,6 +420,8 @@ export type OffreCreateManyInput = {
   devise?: string
   periodiciteJours?: number
   toleranceJours?: number
+  actif?: boolean
+  configurationId?: string | null
   createdAt?: Date | string
 }
 
@@ -396,6 +433,7 @@ export type OffreUpdateManyMutationInput = {
   devise?: Prisma.StringFieldUpdateOperationsInput | string
   periodiciteJours?: Prisma.IntFieldUpdateOperationsInput | number
   toleranceJours?: Prisma.IntFieldUpdateOperationsInput | number
+  actif?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -408,6 +446,8 @@ export type OffreUncheckedUpdateManyInput = {
   devise?: Prisma.StringFieldUpdateOperationsInput | string
   periodiciteJours?: Prisma.IntFieldUpdateOperationsInput | number
   toleranceJours?: Prisma.IntFieldUpdateOperationsInput | number
+  actif?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  configurationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -435,6 +475,8 @@ export type OffreCountOrderByAggregateInput = {
   devise?: Prisma.SortOrder
   periodiciteJours?: Prisma.SortOrder
   toleranceJours?: Prisma.SortOrder
+  actif?: Prisma.SortOrder
+  configurationId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -453,6 +495,8 @@ export type OffreMaxOrderByAggregateInput = {
   devise?: Prisma.SortOrder
   periodiciteJours?: Prisma.SortOrder
   toleranceJours?: Prisma.SortOrder
+  actif?: Prisma.SortOrder
+  configurationId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -465,6 +509,8 @@ export type OffreMinOrderByAggregateInput = {
   devise?: Prisma.SortOrder
   periodiciteJours?: Prisma.SortOrder
   toleranceJours?: Prisma.SortOrder
+  actif?: Prisma.SortOrder
+  configurationId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -477,6 +523,48 @@ export type OffreSumOrderByAggregateInput = {
 export type OffreScalarRelationFilter = {
   is?: Prisma.OffreWhereInput
   isNot?: Prisma.OffreWhereInput
+}
+
+export type OffreCreateNestedManyWithoutConfigurationInput = {
+  create?: Prisma.XOR<Prisma.OffreCreateWithoutConfigurationInput, Prisma.OffreUncheckedCreateWithoutConfigurationInput> | Prisma.OffreCreateWithoutConfigurationInput[] | Prisma.OffreUncheckedCreateWithoutConfigurationInput[]
+  connectOrCreate?: Prisma.OffreCreateOrConnectWithoutConfigurationInput | Prisma.OffreCreateOrConnectWithoutConfigurationInput[]
+  createMany?: Prisma.OffreCreateManyConfigurationInputEnvelope
+  connect?: Prisma.OffreWhereUniqueInput | Prisma.OffreWhereUniqueInput[]
+}
+
+export type OffreUncheckedCreateNestedManyWithoutConfigurationInput = {
+  create?: Prisma.XOR<Prisma.OffreCreateWithoutConfigurationInput, Prisma.OffreUncheckedCreateWithoutConfigurationInput> | Prisma.OffreCreateWithoutConfigurationInput[] | Prisma.OffreUncheckedCreateWithoutConfigurationInput[]
+  connectOrCreate?: Prisma.OffreCreateOrConnectWithoutConfigurationInput | Prisma.OffreCreateOrConnectWithoutConfigurationInput[]
+  createMany?: Prisma.OffreCreateManyConfigurationInputEnvelope
+  connect?: Prisma.OffreWhereUniqueInput | Prisma.OffreWhereUniqueInput[]
+}
+
+export type OffreUpdateManyWithoutConfigurationNestedInput = {
+  create?: Prisma.XOR<Prisma.OffreCreateWithoutConfigurationInput, Prisma.OffreUncheckedCreateWithoutConfigurationInput> | Prisma.OffreCreateWithoutConfigurationInput[] | Prisma.OffreUncheckedCreateWithoutConfigurationInput[]
+  connectOrCreate?: Prisma.OffreCreateOrConnectWithoutConfigurationInput | Prisma.OffreCreateOrConnectWithoutConfigurationInput[]
+  upsert?: Prisma.OffreUpsertWithWhereUniqueWithoutConfigurationInput | Prisma.OffreUpsertWithWhereUniqueWithoutConfigurationInput[]
+  createMany?: Prisma.OffreCreateManyConfigurationInputEnvelope
+  set?: Prisma.OffreWhereUniqueInput | Prisma.OffreWhereUniqueInput[]
+  disconnect?: Prisma.OffreWhereUniqueInput | Prisma.OffreWhereUniqueInput[]
+  delete?: Prisma.OffreWhereUniqueInput | Prisma.OffreWhereUniqueInput[]
+  connect?: Prisma.OffreWhereUniqueInput | Prisma.OffreWhereUniqueInput[]
+  update?: Prisma.OffreUpdateWithWhereUniqueWithoutConfigurationInput | Prisma.OffreUpdateWithWhereUniqueWithoutConfigurationInput[]
+  updateMany?: Prisma.OffreUpdateManyWithWhereWithoutConfigurationInput | Prisma.OffreUpdateManyWithWhereWithoutConfigurationInput[]
+  deleteMany?: Prisma.OffreScalarWhereInput | Prisma.OffreScalarWhereInput[]
+}
+
+export type OffreUncheckedUpdateManyWithoutConfigurationNestedInput = {
+  create?: Prisma.XOR<Prisma.OffreCreateWithoutConfigurationInput, Prisma.OffreUncheckedCreateWithoutConfigurationInput> | Prisma.OffreCreateWithoutConfigurationInput[] | Prisma.OffreUncheckedCreateWithoutConfigurationInput[]
+  connectOrCreate?: Prisma.OffreCreateOrConnectWithoutConfigurationInput | Prisma.OffreCreateOrConnectWithoutConfigurationInput[]
+  upsert?: Prisma.OffreUpsertWithWhereUniqueWithoutConfigurationInput | Prisma.OffreUpsertWithWhereUniqueWithoutConfigurationInput[]
+  createMany?: Prisma.OffreCreateManyConfigurationInputEnvelope
+  set?: Prisma.OffreWhereUniqueInput | Prisma.OffreWhereUniqueInput[]
+  disconnect?: Prisma.OffreWhereUniqueInput | Prisma.OffreWhereUniqueInput[]
+  delete?: Prisma.OffreWhereUniqueInput | Prisma.OffreWhereUniqueInput[]
+  connect?: Prisma.OffreWhereUniqueInput | Prisma.OffreWhereUniqueInput[]
+  update?: Prisma.OffreUpdateWithWhereUniqueWithoutConfigurationInput | Prisma.OffreUpdateWithWhereUniqueWithoutConfigurationInput[]
+  updateMany?: Prisma.OffreUpdateManyWithWhereWithoutConfigurationInput | Prisma.OffreUpdateManyWithWhereWithoutConfigurationInput[]
+  deleteMany?: Prisma.OffreScalarWhereInput | Prisma.OffreScalarWhereInput[]
 }
 
 export type OffreCreateNestedManyWithoutAppInput = {
@@ -543,6 +631,77 @@ export type OffreUpdateOneRequiredWithoutAbonnementsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.OffreUpdateToOneWithWhereWithoutAbonnementsInput, Prisma.OffreUpdateWithoutAbonnementsInput>, Prisma.OffreUncheckedUpdateWithoutAbonnementsInput>
 }
 
+export type OffreCreateWithoutConfigurationInput = {
+  id?: string
+  nom: string
+  slug: string
+  prix: number
+  devise?: string
+  periodiciteJours?: number
+  toleranceJours?: number
+  actif?: boolean
+  createdAt?: Date | string
+  app: Prisma.AppCreateNestedOneWithoutOffresInput
+  abonnements?: Prisma.AbonnementCreateNestedManyWithoutOffreInput
+}
+
+export type OffreUncheckedCreateWithoutConfigurationInput = {
+  id?: string
+  appId: string
+  nom: string
+  slug: string
+  prix: number
+  devise?: string
+  periodiciteJours?: number
+  toleranceJours?: number
+  actif?: boolean
+  createdAt?: Date | string
+  abonnements?: Prisma.AbonnementUncheckedCreateNestedManyWithoutOffreInput
+}
+
+export type OffreCreateOrConnectWithoutConfigurationInput = {
+  where: Prisma.OffreWhereUniqueInput
+  create: Prisma.XOR<Prisma.OffreCreateWithoutConfigurationInput, Prisma.OffreUncheckedCreateWithoutConfigurationInput>
+}
+
+export type OffreCreateManyConfigurationInputEnvelope = {
+  data: Prisma.OffreCreateManyConfigurationInput | Prisma.OffreCreateManyConfigurationInput[]
+  skipDuplicates?: boolean
+}
+
+export type OffreUpsertWithWhereUniqueWithoutConfigurationInput = {
+  where: Prisma.OffreWhereUniqueInput
+  update: Prisma.XOR<Prisma.OffreUpdateWithoutConfigurationInput, Prisma.OffreUncheckedUpdateWithoutConfigurationInput>
+  create: Prisma.XOR<Prisma.OffreCreateWithoutConfigurationInput, Prisma.OffreUncheckedCreateWithoutConfigurationInput>
+}
+
+export type OffreUpdateWithWhereUniqueWithoutConfigurationInput = {
+  where: Prisma.OffreWhereUniqueInput
+  data: Prisma.XOR<Prisma.OffreUpdateWithoutConfigurationInput, Prisma.OffreUncheckedUpdateWithoutConfigurationInput>
+}
+
+export type OffreUpdateManyWithWhereWithoutConfigurationInput = {
+  where: Prisma.OffreScalarWhereInput
+  data: Prisma.XOR<Prisma.OffreUpdateManyMutationInput, Prisma.OffreUncheckedUpdateManyWithoutConfigurationInput>
+}
+
+export type OffreScalarWhereInput = {
+  AND?: Prisma.OffreScalarWhereInput | Prisma.OffreScalarWhereInput[]
+  OR?: Prisma.OffreScalarWhereInput[]
+  NOT?: Prisma.OffreScalarWhereInput | Prisma.OffreScalarWhereInput[]
+  id?: Prisma.StringFilter<"Offre"> | string
+  appId?: Prisma.StringFilter<"Offre"> | string
+  nom?: Prisma.StringFilter<"Offre"> | string
+  slug?: Prisma.StringFilter<"Offre"> | string
+  prix?: Prisma.IntFilter<"Offre"> | number
+  devise?: Prisma.StringFilter<"Offre"> | string
+  periodiciteJours?: Prisma.IntFilter<"Offre"> | number
+  toleranceJours?: Prisma.IntFilter<"Offre"> | number
+  actif?: Prisma.BoolFilter<"Offre"> | boolean
+  configurationId?: Prisma.StringNullableFilter<"Offre"> | string | null
+  createdAt?: Prisma.DateTimeFilter<"Offre"> | Date | string
+}
+
 export type OffreCreateWithoutAppInput = {
   id?: string
   nom: string
@@ -551,7 +710,9 @@ export type OffreCreateWithoutAppInput = {
   devise?: string
   periodiciteJours?: number
   toleranceJours?: number
+  actif?: boolean
   createdAt?: Date | string
+  configuration?: Prisma.ConfigurationPaiementCreateNestedOneWithoutOffresInput
   abonnements?: Prisma.AbonnementCreateNestedManyWithoutOffreInput
 }
 
@@ -563,6 +724,8 @@ export type OffreUncheckedCreateWithoutAppInput = {
   devise?: string
   periodiciteJours?: number
   toleranceJours?: number
+  actif?: boolean
+  configurationId?: string | null
   createdAt?: Date | string
   abonnements?: Prisma.AbonnementUncheckedCreateNestedManyWithoutOffreInput
 }
@@ -593,21 +756,6 @@ export type OffreUpdateManyWithWhereWithoutAppInput = {
   data: Prisma.XOR<Prisma.OffreUpdateManyMutationInput, Prisma.OffreUncheckedUpdateManyWithoutAppInput>
 }
 
-export type OffreScalarWhereInput = {
-  AND?: Prisma.OffreScalarWhereInput | Prisma.OffreScalarWhereInput[]
-  OR?: Prisma.OffreScalarWhereInput[]
-  NOT?: Prisma.OffreScalarWhereInput | Prisma.OffreScalarWhereInput[]
-  id?: Prisma.StringFilter<"Offre"> | string
-  appId?: Prisma.StringFilter<"Offre"> | string
-  nom?: Prisma.StringFilter<"Offre"> | string
-  slug?: Prisma.StringFilter<"Offre"> | string
-  prix?: Prisma.IntFilter<"Offre"> | number
-  devise?: Prisma.StringFilter<"Offre"> | string
-  periodiciteJours?: Prisma.IntFilter<"Offre"> | number
-  toleranceJours?: Prisma.IntFilter<"Offre"> | number
-  createdAt?: Prisma.DateTimeFilter<"Offre"> | Date | string
-}
-
 export type OffreCreateWithoutAbonnementsInput = {
   id?: string
   nom: string
@@ -616,8 +764,10 @@ export type OffreCreateWithoutAbonnementsInput = {
   devise?: string
   periodiciteJours?: number
   toleranceJours?: number
+  actif?: boolean
   createdAt?: Date | string
   app: Prisma.AppCreateNestedOneWithoutOffresInput
+  configuration?: Prisma.ConfigurationPaiementCreateNestedOneWithoutOffresInput
 }
 
 export type OffreUncheckedCreateWithoutAbonnementsInput = {
@@ -629,6 +779,8 @@ export type OffreUncheckedCreateWithoutAbonnementsInput = {
   devise?: string
   periodiciteJours?: number
   toleranceJours?: number
+  actif?: boolean
+  configurationId?: string | null
   createdAt?: Date | string
 }
 
@@ -656,8 +808,10 @@ export type OffreUpdateWithoutAbonnementsInput = {
   devise?: Prisma.StringFieldUpdateOperationsInput | string
   periodiciteJours?: Prisma.IntFieldUpdateOperationsInput | number
   toleranceJours?: Prisma.IntFieldUpdateOperationsInput | number
+  actif?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   app?: Prisma.AppUpdateOneRequiredWithoutOffresNestedInput
+  configuration?: Prisma.ConfigurationPaiementUpdateOneWithoutOffresNestedInput
 }
 
 export type OffreUncheckedUpdateWithoutAbonnementsInput = {
@@ -669,6 +823,62 @@ export type OffreUncheckedUpdateWithoutAbonnementsInput = {
   devise?: Prisma.StringFieldUpdateOperationsInput | string
   periodiciteJours?: Prisma.IntFieldUpdateOperationsInput | number
   toleranceJours?: Prisma.IntFieldUpdateOperationsInput | number
+  actif?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  configurationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type OffreCreateManyConfigurationInput = {
+  id?: string
+  appId: string
+  nom: string
+  slug: string
+  prix: number
+  devise?: string
+  periodiciteJours?: number
+  toleranceJours?: number
+  actif?: boolean
+  createdAt?: Date | string
+}
+
+export type OffreUpdateWithoutConfigurationInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  nom?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  prix?: Prisma.IntFieldUpdateOperationsInput | number
+  devise?: Prisma.StringFieldUpdateOperationsInput | string
+  periodiciteJours?: Prisma.IntFieldUpdateOperationsInput | number
+  toleranceJours?: Prisma.IntFieldUpdateOperationsInput | number
+  actif?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  app?: Prisma.AppUpdateOneRequiredWithoutOffresNestedInput
+  abonnements?: Prisma.AbonnementUpdateManyWithoutOffreNestedInput
+}
+
+export type OffreUncheckedUpdateWithoutConfigurationInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  appId?: Prisma.StringFieldUpdateOperationsInput | string
+  nom?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  prix?: Prisma.IntFieldUpdateOperationsInput | number
+  devise?: Prisma.StringFieldUpdateOperationsInput | string
+  periodiciteJours?: Prisma.IntFieldUpdateOperationsInput | number
+  toleranceJours?: Prisma.IntFieldUpdateOperationsInput | number
+  actif?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  abonnements?: Prisma.AbonnementUncheckedUpdateManyWithoutOffreNestedInput
+}
+
+export type OffreUncheckedUpdateManyWithoutConfigurationInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  appId?: Prisma.StringFieldUpdateOperationsInput | string
+  nom?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  prix?: Prisma.IntFieldUpdateOperationsInput | number
+  devise?: Prisma.StringFieldUpdateOperationsInput | string
+  periodiciteJours?: Prisma.IntFieldUpdateOperationsInput | number
+  toleranceJours?: Prisma.IntFieldUpdateOperationsInput | number
+  actif?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -680,6 +890,8 @@ export type OffreCreateManyAppInput = {
   devise?: string
   periodiciteJours?: number
   toleranceJours?: number
+  actif?: boolean
+  configurationId?: string | null
   createdAt?: Date | string
 }
 
@@ -691,7 +903,9 @@ export type OffreUpdateWithoutAppInput = {
   devise?: Prisma.StringFieldUpdateOperationsInput | string
   periodiciteJours?: Prisma.IntFieldUpdateOperationsInput | number
   toleranceJours?: Prisma.IntFieldUpdateOperationsInput | number
+  actif?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  configuration?: Prisma.ConfigurationPaiementUpdateOneWithoutOffresNestedInput
   abonnements?: Prisma.AbonnementUpdateManyWithoutOffreNestedInput
 }
 
@@ -703,6 +917,8 @@ export type OffreUncheckedUpdateWithoutAppInput = {
   devise?: Prisma.StringFieldUpdateOperationsInput | string
   periodiciteJours?: Prisma.IntFieldUpdateOperationsInput | number
   toleranceJours?: Prisma.IntFieldUpdateOperationsInput | number
+  actif?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  configurationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   abonnements?: Prisma.AbonnementUncheckedUpdateManyWithoutOffreNestedInput
 }
@@ -715,6 +931,8 @@ export type OffreUncheckedUpdateManyWithoutAppInput = {
   devise?: Prisma.StringFieldUpdateOperationsInput | string
   periodiciteJours?: Prisma.IntFieldUpdateOperationsInput | number
   toleranceJours?: Prisma.IntFieldUpdateOperationsInput | number
+  actif?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  configurationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -758,8 +976,11 @@ export type OffreSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   devise?: boolean
   periodiciteJours?: boolean
   toleranceJours?: boolean
+  actif?: boolean
+  configurationId?: boolean
   createdAt?: boolean
   app?: boolean | Prisma.AppDefaultArgs<ExtArgs>
+  configuration?: boolean | Prisma.Offre$configurationArgs<ExtArgs>
   abonnements?: boolean | Prisma.Offre$abonnementsArgs<ExtArgs>
   _count?: boolean | Prisma.OffreCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["offre"]>
@@ -773,8 +994,11 @@ export type OffreSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   devise?: boolean
   periodiciteJours?: boolean
   toleranceJours?: boolean
+  actif?: boolean
+  configurationId?: boolean
   createdAt?: boolean
   app?: boolean | Prisma.AppDefaultArgs<ExtArgs>
+  configuration?: boolean | Prisma.Offre$configurationArgs<ExtArgs>
 }, ExtArgs["result"]["offre"]>
 
 export type OffreSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -786,8 +1010,11 @@ export type OffreSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   devise?: boolean
   periodiciteJours?: boolean
   toleranceJours?: boolean
+  actif?: boolean
+  configurationId?: boolean
   createdAt?: boolean
   app?: boolean | Prisma.AppDefaultArgs<ExtArgs>
+  configuration?: boolean | Prisma.Offre$configurationArgs<ExtArgs>
 }, ExtArgs["result"]["offre"]>
 
 export type OffreSelectScalar = {
@@ -799,26 +1026,32 @@ export type OffreSelectScalar = {
   devise?: boolean
   periodiciteJours?: boolean
   toleranceJours?: boolean
+  actif?: boolean
+  configurationId?: boolean
   createdAt?: boolean
 }
 
-export type OffreOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "appId" | "nom" | "slug" | "prix" | "devise" | "periodiciteJours" | "toleranceJours" | "createdAt", ExtArgs["result"]["offre"]>
+export type OffreOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "appId" | "nom" | "slug" | "prix" | "devise" | "periodiciteJours" | "toleranceJours" | "actif" | "configurationId" | "createdAt", ExtArgs["result"]["offre"]>
 export type OffreInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   app?: boolean | Prisma.AppDefaultArgs<ExtArgs>
+  configuration?: boolean | Prisma.Offre$configurationArgs<ExtArgs>
   abonnements?: boolean | Prisma.Offre$abonnementsArgs<ExtArgs>
   _count?: boolean | Prisma.OffreCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type OffreIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   app?: boolean | Prisma.AppDefaultArgs<ExtArgs>
+  configuration?: boolean | Prisma.Offre$configurationArgs<ExtArgs>
 }
 export type OffreIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   app?: boolean | Prisma.AppDefaultArgs<ExtArgs>
+  configuration?: boolean | Prisma.Offre$configurationArgs<ExtArgs>
 }
 
 export type $OffrePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Offre"
   objects: {
     app: Prisma.$AppPayload<ExtArgs>
+    configuration: Prisma.$ConfigurationPaiementPayload<ExtArgs> | null
     abonnements: Prisma.$AbonnementPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
@@ -830,6 +1063,8 @@ export type $OffrePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     devise: string
     periodiciteJours: number
     toleranceJours: number
+    actif: boolean
+    configurationId: string | null
     createdAt: Date
   }, ExtArgs["result"]["offre"]>
   composites: {}
@@ -1226,6 +1461,7 @@ readonly fields: OffreFieldRefs;
 export interface Prisma__OffreClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   app<T extends Prisma.AppDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.AppDefaultArgs<ExtArgs>>): Prisma.Prisma__AppClient<runtime.Types.Result.GetResult<Prisma.$AppPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  configuration<T extends Prisma.Offre$configurationArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Offre$configurationArgs<ExtArgs>>): Prisma.Prisma__ConfigurationPaiementClient<runtime.Types.Result.GetResult<Prisma.$ConfigurationPaiementPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   abonnements<T extends Prisma.Offre$abonnementsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Offre$abonnementsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AbonnementPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -1264,6 +1500,8 @@ export interface OffreFieldRefs {
   readonly devise: Prisma.FieldRef<"Offre", 'String'>
   readonly periodiciteJours: Prisma.FieldRef<"Offre", 'Int'>
   readonly toleranceJours: Prisma.FieldRef<"Offre", 'Int'>
+  readonly actif: Prisma.FieldRef<"Offre", 'Boolean'>
+  readonly configurationId: Prisma.FieldRef<"Offre", 'String'>
   readonly createdAt: Prisma.FieldRef<"Offre", 'DateTime'>
 }
     
@@ -1663,6 +1901,25 @@ export type OffreDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Interna
    * Limit how many Offres to delete.
    */
   limit?: number
+}
+
+/**
+ * Offre.configuration
+ */
+export type Offre$configurationArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ConfigurationPaiement
+   */
+  select?: Prisma.ConfigurationPaiementSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ConfigurationPaiement
+   */
+  omit?: Prisma.ConfigurationPaiementOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ConfigurationPaiementInclude<ExtArgs> | null
+  where?: Prisma.ConfigurationPaiementWhereInput
 }
 
 /**

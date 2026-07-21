@@ -29,6 +29,9 @@ export type AppMinAggregateOutputType = {
   tenantId: string | null
   nom: string | null
   plateforme: string | null
+  cleApiPublique: string | null
+  cleApiSecreteHash: string | null
+  cleApiSecreteIndice: string | null
   createdAt: Date | null
 }
 
@@ -37,6 +40,9 @@ export type AppMaxAggregateOutputType = {
   tenantId: string | null
   nom: string | null
   plateforme: string | null
+  cleApiPublique: string | null
+  cleApiSecreteHash: string | null
+  cleApiSecreteIndice: string | null
   createdAt: Date | null
 }
 
@@ -45,6 +51,9 @@ export type AppCountAggregateOutputType = {
   tenantId: number
   nom: number
   plateforme: number
+  cleApiPublique: number
+  cleApiSecreteHash: number
+  cleApiSecreteIndice: number
   createdAt: number
   _all: number
 }
@@ -55,6 +64,9 @@ export type AppMinAggregateInputType = {
   tenantId?: true
   nom?: true
   plateforme?: true
+  cleApiPublique?: true
+  cleApiSecreteHash?: true
+  cleApiSecreteIndice?: true
   createdAt?: true
 }
 
@@ -63,6 +75,9 @@ export type AppMaxAggregateInputType = {
   tenantId?: true
   nom?: true
   plateforme?: true
+  cleApiPublique?: true
+  cleApiSecreteHash?: true
+  cleApiSecreteIndice?: true
   createdAt?: true
 }
 
@@ -71,6 +86,9 @@ export type AppCountAggregateInputType = {
   tenantId?: true
   nom?: true
   plateforme?: true
+  cleApiPublique?: true
+  cleApiSecreteHash?: true
+  cleApiSecreteIndice?: true
   createdAt?: true
   _all?: true
 }
@@ -152,6 +170,9 @@ export type AppGroupByOutputType = {
   tenantId: string
   nom: string
   plateforme: string
+  cleApiPublique: string
+  cleApiSecreteHash: string | null
+  cleApiSecreteIndice: string | null
   createdAt: Date
   _count: AppCountAggregateOutputType | null
   _min: AppMinAggregateOutputType | null
@@ -181,6 +202,9 @@ export type AppWhereInput = {
   tenantId?: Prisma.StringFilter<"App"> | string
   nom?: Prisma.StringFilter<"App"> | string
   plateforme?: Prisma.StringFilter<"App"> | string
+  cleApiPublique?: Prisma.StringFilter<"App"> | string
+  cleApiSecreteHash?: Prisma.StringNullableFilter<"App"> | string | null
+  cleApiSecreteIndice?: Prisma.StringNullableFilter<"App"> | string | null
   createdAt?: Prisma.DateTimeFilter<"App"> | Date | string
   tenant?: Prisma.XOR<Prisma.TenantScalarRelationFilter, Prisma.TenantWhereInput>
   offres?: Prisma.OffreListRelationFilter
@@ -191,6 +215,9 @@ export type AppOrderByWithRelationInput = {
   tenantId?: Prisma.SortOrder
   nom?: Prisma.SortOrder
   plateforme?: Prisma.SortOrder
+  cleApiPublique?: Prisma.SortOrder
+  cleApiSecreteHash?: Prisma.SortOrderInput | Prisma.SortOrder
+  cleApiSecreteIndice?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   tenant?: Prisma.TenantOrderByWithRelationInput
   offres?: Prisma.OffreOrderByRelationAggregateInput
@@ -198,22 +225,28 @@ export type AppOrderByWithRelationInput = {
 
 export type AppWhereUniqueInput = Prisma.AtLeast<{
   id?: string
+  cleApiPublique?: string
+  cleApiSecreteHash?: string
   AND?: Prisma.AppWhereInput | Prisma.AppWhereInput[]
   OR?: Prisma.AppWhereInput[]
   NOT?: Prisma.AppWhereInput | Prisma.AppWhereInput[]
   tenantId?: Prisma.StringFilter<"App"> | string
   nom?: Prisma.StringFilter<"App"> | string
   plateforme?: Prisma.StringFilter<"App"> | string
+  cleApiSecreteIndice?: Prisma.StringNullableFilter<"App"> | string | null
   createdAt?: Prisma.DateTimeFilter<"App"> | Date | string
   tenant?: Prisma.XOR<Prisma.TenantScalarRelationFilter, Prisma.TenantWhereInput>
   offres?: Prisma.OffreListRelationFilter
-}, "id">
+}, "id" | "cleApiPublique" | "cleApiSecreteHash">
 
 export type AppOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   tenantId?: Prisma.SortOrder
   nom?: Prisma.SortOrder
   plateforme?: Prisma.SortOrder
+  cleApiPublique?: Prisma.SortOrder
+  cleApiSecreteHash?: Prisma.SortOrderInput | Prisma.SortOrder
+  cleApiSecreteIndice?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.AppCountOrderByAggregateInput
   _max?: Prisma.AppMaxOrderByAggregateInput
@@ -228,6 +261,9 @@ export type AppScalarWhereWithAggregatesInput = {
   tenantId?: Prisma.StringWithAggregatesFilter<"App"> | string
   nom?: Prisma.StringWithAggregatesFilter<"App"> | string
   plateforme?: Prisma.StringWithAggregatesFilter<"App"> | string
+  cleApiPublique?: Prisma.StringWithAggregatesFilter<"App"> | string
+  cleApiSecreteHash?: Prisma.StringNullableWithAggregatesFilter<"App"> | string | null
+  cleApiSecreteIndice?: Prisma.StringNullableWithAggregatesFilter<"App"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"App"> | Date | string
 }
 
@@ -235,6 +271,9 @@ export type AppCreateInput = {
   id?: string
   nom: string
   plateforme?: string
+  cleApiPublique?: string
+  cleApiSecreteHash?: string | null
+  cleApiSecreteIndice?: string | null
   createdAt?: Date | string
   tenant: Prisma.TenantCreateNestedOneWithoutAppsInput
   offres?: Prisma.OffreCreateNestedManyWithoutAppInput
@@ -245,6 +284,9 @@ export type AppUncheckedCreateInput = {
   tenantId: string
   nom: string
   plateforme?: string
+  cleApiPublique?: string
+  cleApiSecreteHash?: string | null
+  cleApiSecreteIndice?: string | null
   createdAt?: Date | string
   offres?: Prisma.OffreUncheckedCreateNestedManyWithoutAppInput
 }
@@ -253,6 +295,9 @@ export type AppUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   nom?: Prisma.StringFieldUpdateOperationsInput | string
   plateforme?: Prisma.StringFieldUpdateOperationsInput | string
+  cleApiPublique?: Prisma.StringFieldUpdateOperationsInput | string
+  cleApiSecreteHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleApiSecreteIndice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tenant?: Prisma.TenantUpdateOneRequiredWithoutAppsNestedInput
   offres?: Prisma.OffreUpdateManyWithoutAppNestedInput
@@ -263,6 +308,9 @@ export type AppUncheckedUpdateInput = {
   tenantId?: Prisma.StringFieldUpdateOperationsInput | string
   nom?: Prisma.StringFieldUpdateOperationsInput | string
   plateforme?: Prisma.StringFieldUpdateOperationsInput | string
+  cleApiPublique?: Prisma.StringFieldUpdateOperationsInput | string
+  cleApiSecreteHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleApiSecreteIndice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   offres?: Prisma.OffreUncheckedUpdateManyWithoutAppNestedInput
 }
@@ -272,6 +320,9 @@ export type AppCreateManyInput = {
   tenantId: string
   nom: string
   plateforme?: string
+  cleApiPublique?: string
+  cleApiSecreteHash?: string | null
+  cleApiSecreteIndice?: string | null
   createdAt?: Date | string
 }
 
@@ -279,6 +330,9 @@ export type AppUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   nom?: Prisma.StringFieldUpdateOperationsInput | string
   plateforme?: Prisma.StringFieldUpdateOperationsInput | string
+  cleApiPublique?: Prisma.StringFieldUpdateOperationsInput | string
+  cleApiSecreteHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleApiSecreteIndice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -287,6 +341,9 @@ export type AppUncheckedUpdateManyInput = {
   tenantId?: Prisma.StringFieldUpdateOperationsInput | string
   nom?: Prisma.StringFieldUpdateOperationsInput | string
   plateforme?: Prisma.StringFieldUpdateOperationsInput | string
+  cleApiPublique?: Prisma.StringFieldUpdateOperationsInput | string
+  cleApiSecreteHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleApiSecreteIndice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -305,6 +362,9 @@ export type AppCountOrderByAggregateInput = {
   tenantId?: Prisma.SortOrder
   nom?: Prisma.SortOrder
   plateforme?: Prisma.SortOrder
+  cleApiPublique?: Prisma.SortOrder
+  cleApiSecreteHash?: Prisma.SortOrder
+  cleApiSecreteIndice?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -313,6 +373,9 @@ export type AppMaxOrderByAggregateInput = {
   tenantId?: Prisma.SortOrder
   nom?: Prisma.SortOrder
   plateforme?: Prisma.SortOrder
+  cleApiPublique?: Prisma.SortOrder
+  cleApiSecreteHash?: Prisma.SortOrder
+  cleApiSecreteIndice?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -321,6 +384,9 @@ export type AppMinOrderByAggregateInput = {
   tenantId?: Prisma.SortOrder
   nom?: Prisma.SortOrder
   plateforme?: Prisma.SortOrder
+  cleApiPublique?: Prisma.SortOrder
+  cleApiSecreteHash?: Prisma.SortOrder
+  cleApiSecreteIndice?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -371,6 +437,10 @@ export type AppUncheckedUpdateManyWithoutTenantNestedInput = {
   deleteMany?: Prisma.AppScalarWhereInput | Prisma.AppScalarWhereInput[]
 }
 
+export type NullableStringFieldUpdateOperationsInput = {
+  set?: string | null
+}
+
 export type AppCreateNestedOneWithoutOffresInput = {
   create?: Prisma.XOR<Prisma.AppCreateWithoutOffresInput, Prisma.AppUncheckedCreateWithoutOffresInput>
   connectOrCreate?: Prisma.AppCreateOrConnectWithoutOffresInput
@@ -389,6 +459,9 @@ export type AppCreateWithoutTenantInput = {
   id?: string
   nom: string
   plateforme?: string
+  cleApiPublique?: string
+  cleApiSecreteHash?: string | null
+  cleApiSecreteIndice?: string | null
   createdAt?: Date | string
   offres?: Prisma.OffreCreateNestedManyWithoutAppInput
 }
@@ -397,6 +470,9 @@ export type AppUncheckedCreateWithoutTenantInput = {
   id?: string
   nom: string
   plateforme?: string
+  cleApiPublique?: string
+  cleApiSecreteHash?: string | null
+  cleApiSecreteIndice?: string | null
   createdAt?: Date | string
   offres?: Prisma.OffreUncheckedCreateNestedManyWithoutAppInput
 }
@@ -435,6 +511,9 @@ export type AppScalarWhereInput = {
   tenantId?: Prisma.StringFilter<"App"> | string
   nom?: Prisma.StringFilter<"App"> | string
   plateforme?: Prisma.StringFilter<"App"> | string
+  cleApiPublique?: Prisma.StringFilter<"App"> | string
+  cleApiSecreteHash?: Prisma.StringNullableFilter<"App"> | string | null
+  cleApiSecreteIndice?: Prisma.StringNullableFilter<"App"> | string | null
   createdAt?: Prisma.DateTimeFilter<"App"> | Date | string
 }
 
@@ -442,6 +521,9 @@ export type AppCreateWithoutOffresInput = {
   id?: string
   nom: string
   plateforme?: string
+  cleApiPublique?: string
+  cleApiSecreteHash?: string | null
+  cleApiSecreteIndice?: string | null
   createdAt?: Date | string
   tenant: Prisma.TenantCreateNestedOneWithoutAppsInput
 }
@@ -451,6 +533,9 @@ export type AppUncheckedCreateWithoutOffresInput = {
   tenantId: string
   nom: string
   plateforme?: string
+  cleApiPublique?: string
+  cleApiSecreteHash?: string | null
+  cleApiSecreteIndice?: string | null
   createdAt?: Date | string
 }
 
@@ -474,6 +559,9 @@ export type AppUpdateWithoutOffresInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   nom?: Prisma.StringFieldUpdateOperationsInput | string
   plateforme?: Prisma.StringFieldUpdateOperationsInput | string
+  cleApiPublique?: Prisma.StringFieldUpdateOperationsInput | string
+  cleApiSecreteHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleApiSecreteIndice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tenant?: Prisma.TenantUpdateOneRequiredWithoutAppsNestedInput
 }
@@ -483,6 +571,9 @@ export type AppUncheckedUpdateWithoutOffresInput = {
   tenantId?: Prisma.StringFieldUpdateOperationsInput | string
   nom?: Prisma.StringFieldUpdateOperationsInput | string
   plateforme?: Prisma.StringFieldUpdateOperationsInput | string
+  cleApiPublique?: Prisma.StringFieldUpdateOperationsInput | string
+  cleApiSecreteHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleApiSecreteIndice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -490,6 +581,9 @@ export type AppCreateManyTenantInput = {
   id?: string
   nom: string
   plateforme?: string
+  cleApiPublique?: string
+  cleApiSecreteHash?: string | null
+  cleApiSecreteIndice?: string | null
   createdAt?: Date | string
 }
 
@@ -497,6 +591,9 @@ export type AppUpdateWithoutTenantInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   nom?: Prisma.StringFieldUpdateOperationsInput | string
   plateforme?: Prisma.StringFieldUpdateOperationsInput | string
+  cleApiPublique?: Prisma.StringFieldUpdateOperationsInput | string
+  cleApiSecreteHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleApiSecreteIndice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   offres?: Prisma.OffreUpdateManyWithoutAppNestedInput
 }
@@ -505,6 +602,9 @@ export type AppUncheckedUpdateWithoutTenantInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   nom?: Prisma.StringFieldUpdateOperationsInput | string
   plateforme?: Prisma.StringFieldUpdateOperationsInput | string
+  cleApiPublique?: Prisma.StringFieldUpdateOperationsInput | string
+  cleApiSecreteHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleApiSecreteIndice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   offres?: Prisma.OffreUncheckedUpdateManyWithoutAppNestedInput
 }
@@ -513,6 +613,9 @@ export type AppUncheckedUpdateManyWithoutTenantInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   nom?: Prisma.StringFieldUpdateOperationsInput | string
   plateforme?: Prisma.StringFieldUpdateOperationsInput | string
+  cleApiPublique?: Prisma.StringFieldUpdateOperationsInput | string
+  cleApiSecreteHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleApiSecreteIndice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -552,6 +655,9 @@ export type AppSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = ru
   tenantId?: boolean
   nom?: boolean
   plateforme?: boolean
+  cleApiPublique?: boolean
+  cleApiSecreteHash?: boolean
+  cleApiSecreteIndice?: boolean
   createdAt?: boolean
   tenant?: boolean | Prisma.TenantDefaultArgs<ExtArgs>
   offres?: boolean | Prisma.App$offresArgs<ExtArgs>
@@ -563,6 +669,9 @@ export type AppSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extension
   tenantId?: boolean
   nom?: boolean
   plateforme?: boolean
+  cleApiPublique?: boolean
+  cleApiSecreteHash?: boolean
+  cleApiSecreteIndice?: boolean
   createdAt?: boolean
   tenant?: boolean | Prisma.TenantDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["app"]>
@@ -572,6 +681,9 @@ export type AppSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extension
   tenantId?: boolean
   nom?: boolean
   plateforme?: boolean
+  cleApiPublique?: boolean
+  cleApiSecreteHash?: boolean
+  cleApiSecreteIndice?: boolean
   createdAt?: boolean
   tenant?: boolean | Prisma.TenantDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["app"]>
@@ -581,10 +693,13 @@ export type AppSelectScalar = {
   tenantId?: boolean
   nom?: boolean
   plateforme?: boolean
+  cleApiPublique?: boolean
+  cleApiSecreteHash?: boolean
+  cleApiSecreteIndice?: boolean
   createdAt?: boolean
 }
 
-export type AppOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "tenantId" | "nom" | "plateforme" | "createdAt", ExtArgs["result"]["app"]>
+export type AppOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "tenantId" | "nom" | "plateforme" | "cleApiPublique" | "cleApiSecreteHash" | "cleApiSecreteIndice" | "createdAt", ExtArgs["result"]["app"]>
 export type AppInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   tenant?: boolean | Prisma.TenantDefaultArgs<ExtArgs>
   offres?: boolean | Prisma.App$offresArgs<ExtArgs>
@@ -608,6 +723,9 @@ export type $AppPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
     tenantId: string
     nom: string
     plateforme: string
+    cleApiPublique: string
+    cleApiSecreteHash: string | null
+    cleApiSecreteIndice: string | null
     createdAt: Date
   }, ExtArgs["result"]["app"]>
   composites: {}
@@ -1038,6 +1156,9 @@ export interface AppFieldRefs {
   readonly tenantId: Prisma.FieldRef<"App", 'String'>
   readonly nom: Prisma.FieldRef<"App", 'String'>
   readonly plateforme: Prisma.FieldRef<"App", 'String'>
+  readonly cleApiPublique: Prisma.FieldRef<"App", 'String'>
+  readonly cleApiSecreteHash: Prisma.FieldRef<"App", 'String'>
+  readonly cleApiSecreteIndice: Prisma.FieldRef<"App", 'String'>
   readonly createdAt: Prisma.FieldRef<"App", 'DateTime'>
 }
     
