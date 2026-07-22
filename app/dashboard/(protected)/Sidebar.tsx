@@ -16,7 +16,15 @@ const NAV = [
   { href: "/dashboard/parametres/facturation", label: "Facturation", dot: "#98917f" },
 ];
 
-export function Sidebar({ userName, tenantNom }: { userName: string; tenantNom: string }) {
+export function Sidebar({
+  userName,
+  tenantNom,
+  provider,
+}: {
+  userName: string;
+  tenantNom: string;
+  provider: string | null;
+}) {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -82,11 +90,18 @@ export function Sidebar({ userName, tenantNom }: { userName: string; tenantNom: 
       <div className="mt-auto flex flex-col gap-3.5">
         <div className="rounded-xl border border-kola-accent/30 bg-kola-accent/[0.14] p-3">
           <div className="mb-0.5 text-[11px] font-semibold text-[#9fd3b6]">
-            Provider connecté
+            {provider ? "Provider connecté" : "Aucun provider"}
           </div>
           <div className="flex items-center gap-1.5 text-[13px] font-bold text-white">
-            <span className="h-2 w-2 rounded-full bg-[#3ddc84] shadow-[0_0_0_3px_#3ddc8433]" />
-            Campay · Sandbox
+            <span
+              className="h-2 w-2 rounded-full"
+              style={
+                provider
+                  ? { background: "#3ddc84", boxShadow: "0 0 0 3px #3ddc8433" }
+                  : { background: "#c14a2c", boxShadow: "0 0 0 3px #c14a2c33" }
+              }
+            />
+            {provider ?? "À configurer"}
           </div>
         </div>
         <div className="flex items-center gap-2.5 border-t border-white/10 pt-3.5">

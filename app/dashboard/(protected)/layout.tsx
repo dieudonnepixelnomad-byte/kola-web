@@ -22,9 +22,18 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const tenant = await prisma.tenant.findUniqueOrThrow({ where: { id: ctx.tenantId } });
   const enLectureSeule = tenant.statutPlateforme === "COUPE" || tenant.statutPlateforme === "EXPIRE";
 
+  const providerActif = await prisma.configurationPaiement.findFirst({
+    where: { tenantId: ctx.tenantId, actif: true, parDefaut: true },
+    select: { prestataire: true },
+  });
+
   return (
     <div className="grid min-h-screen grid-cols-[232px_1fr]">
-      <Sidebar userName={session.user.name ?? session.user.email} tenantNom={tenant.nom} />
+      <Sidebar
+        userName={session.user.name ?? session.user.email}
+        tenantNom={tenant.nom}
+        provider={providerActif?.prestataire ?? null}
+      />
       <main className="overflow-auto bg-kola-cream-light p-7">
         {enLectureSeule && (
           <div className="mb-5 rounded-xl border border-kola-coupe-fg/30 bg-kola-coupe-bg px-4 py-3 text-sm font-semibold text-kola-coupe-fg">
