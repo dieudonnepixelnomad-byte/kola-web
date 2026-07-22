@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type App = {
   id: string;
@@ -23,6 +24,7 @@ export function AppsListe() {
   const [nom, setNom] = useState("");
   const [envoi, setEnvoi] = useState(false);
   const [cleCreee, setCleCreee] = useState<{ cleApiPublique: string; cleApiSecrete: string } | null>(null);
+  const [suppressionId, setSuppressionId] = useState<string | null>(null);
 
   async function charger() {
     setChargement(true);
@@ -50,6 +52,21 @@ export function AppsListe() {
       setNom("");
       setOuvert(false);
       charger();
+    }
+  }
+
+  async function supprimer(e: React.MouseEvent, appId: string) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!confirm("Supprimer cette app ? Cette action est irreversible.")) return;
+    setSuppressionId(appId);
+    const res = await fetch(`/api/admin/apps/${appId}`, { method: "DELETE" });
+    setSuppressionId(null);
+    if (res.ok) {
+      charger();
+    } else {
+      const data = await res.json().catch(() => null);
+      alert(data?.error ?? "Suppression impossible");
     }
   }
 
@@ -98,6 +115,21 @@ export function AppsListe() {
 
       {!chargement && apps.length === 0 && <p className="text-sm text-kola-muted">Aucune app pour l&apos;instant.</p>}
 
+      {chargement && (
+        <div className="grid gap-3 sm:grid-cols-2">
+          {[0, 1].map((i) => (
+            <Card key={i}>
+              <CardHeader>
+                <Skeleton className="h-5 w-32" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-4 w-40" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+
       <div className="grid gap-3 sm:grid-cols-2">
         {apps.map((app) => (
           <Link key={app.id} href={`/dashboard/apps/${app.id}`}>
@@ -108,8 +140,17 @@ export function AppsListe() {
                   <Badge variant="secondary">{app.plateforme}</Badge>
                 </CardTitle>
               </CardHeader>
-              <CardContent className="text-sm text-kola-muted">
-                {app.offres.length} offre(s) · clé {app.cleApiPublique.slice(0, 10)}…
+              <CardContent className="flex flex-col gap-2 text-sm text-kola-muted">
+                <p>{app.offres.length} offre(s)</p>
+                <code className="rounded bg-muted px-2 py-1 font-mono text-xs break-all">{app.cleApiPublique}</code>
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  disabled={suppressionId === app.id}
+                  onClick={(e) => supprimer(e, app.id)}
+                >
+                  {suppressionId === app.id ? "Suppression..." : "Supprimer"}
+                </Button>
               </CardContent>
             </Card>
           </Link>

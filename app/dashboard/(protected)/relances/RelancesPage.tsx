@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type Modele = { id: string; type: string; canal: string; contenu: string; actif: boolean };
 type Log = {
@@ -25,6 +26,7 @@ export function RelancesPage() {
   const [logs, setLogs] = useState<Log[]>([]);
   const [statsEnvoyes, setStatsEnvoyes] = useState(0);
   const [statsTotal, setStatsTotal] = useState(0);
+  const [chargement, setChargement] = useState(true);
 
   async function charger() {
     const [resModeles, resLogs] = await Promise.all([fetch("/api/admin/relances/modeles"), fetch("/api/admin/relances")]);
@@ -35,6 +37,7 @@ export function RelancesPage() {
       setStatsEnvoyes(data.envoyes);
       setStatsTotal(data.total);
     }
+    setChargement(false);
   }
 
   useEffect(() => {
@@ -60,6 +63,17 @@ export function RelancesPage() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
+        {chargement &&
+          [0, 1, 2].map((i) => (
+            <Card key={i}>
+              <CardHeader>
+                <Skeleton className="h-4 w-24" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-20 w-full" />
+              </CardContent>
+            </Card>
+          ))}
         {modeles.map((m) => (
           <Card key={m.id}>
             <CardHeader>
@@ -91,7 +105,17 @@ export function RelancesPage() {
           <div>Statut</div>
           <div>Date</div>
         </div>
-        {logs.length === 0 && <div className="px-4.5 py-6 text-sm text-kola-muted">Journal vide.</div>}
+        {!chargement && logs.length === 0 && <div className="px-4.5 py-6 text-sm text-kola-muted">Journal vide.</div>}
+        {chargement &&
+          [0, 1, 2].map((i) => (
+            <div key={i} className="grid grid-cols-[1fr_0.6fr_0.6fr_0.6fr_1fr] items-center gap-3 border-b border-[#f4efe4] px-4.5 py-3 last:border-b-0">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-4 w-10" />
+              <Skeleton className="h-4 w-16" />
+              <Skeleton className="h-5 w-16 rounded-full" />
+              <Skeleton className="h-4 w-24" />
+            </div>
+          ))}
         {logs.map((l) => (
           <div key={l.id} className="grid grid-cols-[1fr_0.6fr_0.6fr_0.6fr_1fr] items-center gap-3 border-b border-[#f4efe4] px-4.5 py-3 last:border-b-0">
             <div className="font-mono text-sm">{l.abonnement.abonne.identifiantExterne}</div>

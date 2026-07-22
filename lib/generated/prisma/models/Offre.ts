@@ -28,12 +28,14 @@ export type AggregateOffre = {
 
 export type OffreAvgAggregateOutputType = {
   prix: number | null
+  prixAnnuel: number | null
   periodiciteJours: number | null
   toleranceJours: number | null
 }
 
 export type OffreSumAggregateOutputType = {
   prix: number | null
+  prixAnnuel: number | null
   periodiciteJours: number | null
   toleranceJours: number | null
 }
@@ -44,6 +46,7 @@ export type OffreMinAggregateOutputType = {
   nom: string | null
   slug: string | null
   prix: number | null
+  prixAnnuel: number | null
   devise: string | null
   periodiciteJours: number | null
   toleranceJours: number | null
@@ -58,6 +61,7 @@ export type OffreMaxAggregateOutputType = {
   nom: string | null
   slug: string | null
   prix: number | null
+  prixAnnuel: number | null
   devise: string | null
   periodiciteJours: number | null
   toleranceJours: number | null
@@ -72,6 +76,7 @@ export type OffreCountAggregateOutputType = {
   nom: number
   slug: number
   prix: number
+  prixAnnuel: number
   devise: number
   periodiciteJours: number
   toleranceJours: number
@@ -84,12 +89,14 @@ export type OffreCountAggregateOutputType = {
 
 export type OffreAvgAggregateInputType = {
   prix?: true
+  prixAnnuel?: true
   periodiciteJours?: true
   toleranceJours?: true
 }
 
 export type OffreSumAggregateInputType = {
   prix?: true
+  prixAnnuel?: true
   periodiciteJours?: true
   toleranceJours?: true
 }
@@ -100,6 +107,7 @@ export type OffreMinAggregateInputType = {
   nom?: true
   slug?: true
   prix?: true
+  prixAnnuel?: true
   devise?: true
   periodiciteJours?: true
   toleranceJours?: true
@@ -114,6 +122,7 @@ export type OffreMaxAggregateInputType = {
   nom?: true
   slug?: true
   prix?: true
+  prixAnnuel?: true
   devise?: true
   periodiciteJours?: true
   toleranceJours?: true
@@ -128,6 +137,7 @@ export type OffreCountAggregateInputType = {
   nom?: true
   slug?: true
   prix?: true
+  prixAnnuel?: true
   devise?: true
   periodiciteJours?: true
   toleranceJours?: true
@@ -229,6 +239,7 @@ export type OffreGroupByOutputType = {
   nom: string
   slug: string
   prix: number
+  prixAnnuel: number | null
   devise: string
   periodiciteJours: number
   toleranceJours: number
@@ -266,6 +277,7 @@ export type OffreWhereInput = {
   nom?: Prisma.StringFilter<"Offre"> | string
   slug?: Prisma.StringFilter<"Offre"> | string
   prix?: Prisma.IntFilter<"Offre"> | number
+  prixAnnuel?: Prisma.IntNullableFilter<"Offre"> | number | null
   devise?: Prisma.StringFilter<"Offre"> | string
   periodiciteJours?: Prisma.IntFilter<"Offre"> | number
   toleranceJours?: Prisma.IntFilter<"Offre"> | number
@@ -283,6 +295,7 @@ export type OffreOrderByWithRelationInput = {
   nom?: Prisma.SortOrder
   slug?: Prisma.SortOrder
   prix?: Prisma.SortOrder
+  prixAnnuel?: Prisma.SortOrderInput | Prisma.SortOrder
   devise?: Prisma.SortOrder
   periodiciteJours?: Prisma.SortOrder
   toleranceJours?: Prisma.SortOrder
@@ -304,6 +317,7 @@ export type OffreWhereUniqueInput = Prisma.AtLeast<{
   nom?: Prisma.StringFilter<"Offre"> | string
   slug?: Prisma.StringFilter<"Offre"> | string
   prix?: Prisma.IntFilter<"Offre"> | number
+  prixAnnuel?: Prisma.IntNullableFilter<"Offre"> | number | null
   devise?: Prisma.StringFilter<"Offre"> | string
   periodiciteJours?: Prisma.IntFilter<"Offre"> | number
   toleranceJours?: Prisma.IntFilter<"Offre"> | number
@@ -321,6 +335,7 @@ export type OffreOrderByWithAggregationInput = {
   nom?: Prisma.SortOrder
   slug?: Prisma.SortOrder
   prix?: Prisma.SortOrder
+  prixAnnuel?: Prisma.SortOrderInput | Prisma.SortOrder
   devise?: Prisma.SortOrder
   periodiciteJours?: Prisma.SortOrder
   toleranceJours?: Prisma.SortOrder
@@ -343,6 +358,7 @@ export type OffreScalarWhereWithAggregatesInput = {
   nom?: Prisma.StringWithAggregatesFilter<"Offre"> | string
   slug?: Prisma.StringWithAggregatesFilter<"Offre"> | string
   prix?: Prisma.IntWithAggregatesFilter<"Offre"> | number
+  prixAnnuel?: Prisma.IntNullableWithAggregatesFilter<"Offre"> | number | null
   devise?: Prisma.StringWithAggregatesFilter<"Offre"> | string
   periodiciteJours?: Prisma.IntWithAggregatesFilter<"Offre"> | number
   toleranceJours?: Prisma.IntWithAggregatesFilter<"Offre"> | number
@@ -356,6 +372,7 @@ export type OffreCreateInput = {
   nom: string
   slug: string
   prix: number
+  prixAnnuel?: number | null
   devise?: string
   periodiciteJours?: number
   toleranceJours?: number
@@ -372,6 +389,7 @@ export type OffreUncheckedCreateInput = {
   nom: string
   slug: string
   prix: number
+  prixAnnuel?: number | null
   devise?: string
   periodiciteJours?: number
   toleranceJours?: number
@@ -386,6 +404,7 @@ export type OffreUpdateInput = {
   nom?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   prix?: Prisma.IntFieldUpdateOperationsInput | number
+  prixAnnuel?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   devise?: Prisma.StringFieldUpdateOperationsInput | string
   periodiciteJours?: Prisma.IntFieldUpdateOperationsInput | number
   toleranceJours?: Prisma.IntFieldUpdateOperationsInput | number
@@ -402,6 +421,7 @@ export type OffreUncheckedUpdateInput = {
   nom?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   prix?: Prisma.IntFieldUpdateOperationsInput | number
+  prixAnnuel?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   devise?: Prisma.StringFieldUpdateOperationsInput | string
   periodiciteJours?: Prisma.IntFieldUpdateOperationsInput | number
   toleranceJours?: Prisma.IntFieldUpdateOperationsInput | number
@@ -417,6 +437,7 @@ export type OffreCreateManyInput = {
   nom: string
   slug: string
   prix: number
+  prixAnnuel?: number | null
   devise?: string
   periodiciteJours?: number
   toleranceJours?: number
@@ -430,6 +451,7 @@ export type OffreUpdateManyMutationInput = {
   nom?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   prix?: Prisma.IntFieldUpdateOperationsInput | number
+  prixAnnuel?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   devise?: Prisma.StringFieldUpdateOperationsInput | string
   periodiciteJours?: Prisma.IntFieldUpdateOperationsInput | number
   toleranceJours?: Prisma.IntFieldUpdateOperationsInput | number
@@ -443,6 +465,7 @@ export type OffreUncheckedUpdateManyInput = {
   nom?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   prix?: Prisma.IntFieldUpdateOperationsInput | number
+  prixAnnuel?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   devise?: Prisma.StringFieldUpdateOperationsInput | string
   periodiciteJours?: Prisma.IntFieldUpdateOperationsInput | number
   toleranceJours?: Prisma.IntFieldUpdateOperationsInput | number
@@ -472,6 +495,7 @@ export type OffreCountOrderByAggregateInput = {
   nom?: Prisma.SortOrder
   slug?: Prisma.SortOrder
   prix?: Prisma.SortOrder
+  prixAnnuel?: Prisma.SortOrder
   devise?: Prisma.SortOrder
   periodiciteJours?: Prisma.SortOrder
   toleranceJours?: Prisma.SortOrder
@@ -482,6 +506,7 @@ export type OffreCountOrderByAggregateInput = {
 
 export type OffreAvgOrderByAggregateInput = {
   prix?: Prisma.SortOrder
+  prixAnnuel?: Prisma.SortOrder
   periodiciteJours?: Prisma.SortOrder
   toleranceJours?: Prisma.SortOrder
 }
@@ -492,6 +517,7 @@ export type OffreMaxOrderByAggregateInput = {
   nom?: Prisma.SortOrder
   slug?: Prisma.SortOrder
   prix?: Prisma.SortOrder
+  prixAnnuel?: Prisma.SortOrder
   devise?: Prisma.SortOrder
   periodiciteJours?: Prisma.SortOrder
   toleranceJours?: Prisma.SortOrder
@@ -506,6 +532,7 @@ export type OffreMinOrderByAggregateInput = {
   nom?: Prisma.SortOrder
   slug?: Prisma.SortOrder
   prix?: Prisma.SortOrder
+  prixAnnuel?: Prisma.SortOrder
   devise?: Prisma.SortOrder
   periodiciteJours?: Prisma.SortOrder
   toleranceJours?: Prisma.SortOrder
@@ -516,6 +543,7 @@ export type OffreMinOrderByAggregateInput = {
 
 export type OffreSumOrderByAggregateInput = {
   prix?: Prisma.SortOrder
+  prixAnnuel?: Prisma.SortOrder
   periodiciteJours?: Prisma.SortOrder
   toleranceJours?: Prisma.SortOrder
 }
@@ -617,6 +645,14 @@ export type IntFieldUpdateOperationsInput = {
   divide?: number
 }
 
+export type NullableIntFieldUpdateOperationsInput = {
+  set?: number | null
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
+}
+
 export type OffreCreateNestedOneWithoutAbonnementsInput = {
   create?: Prisma.XOR<Prisma.OffreCreateWithoutAbonnementsInput, Prisma.OffreUncheckedCreateWithoutAbonnementsInput>
   connectOrCreate?: Prisma.OffreCreateOrConnectWithoutAbonnementsInput
@@ -636,6 +672,7 @@ export type OffreCreateWithoutConfigurationInput = {
   nom: string
   slug: string
   prix: number
+  prixAnnuel?: number | null
   devise?: string
   periodiciteJours?: number
   toleranceJours?: number
@@ -651,6 +688,7 @@ export type OffreUncheckedCreateWithoutConfigurationInput = {
   nom: string
   slug: string
   prix: number
+  prixAnnuel?: number | null
   devise?: string
   periodiciteJours?: number
   toleranceJours?: number
@@ -694,6 +732,7 @@ export type OffreScalarWhereInput = {
   nom?: Prisma.StringFilter<"Offre"> | string
   slug?: Prisma.StringFilter<"Offre"> | string
   prix?: Prisma.IntFilter<"Offre"> | number
+  prixAnnuel?: Prisma.IntNullableFilter<"Offre"> | number | null
   devise?: Prisma.StringFilter<"Offre"> | string
   periodiciteJours?: Prisma.IntFilter<"Offre"> | number
   toleranceJours?: Prisma.IntFilter<"Offre"> | number
@@ -707,6 +746,7 @@ export type OffreCreateWithoutAppInput = {
   nom: string
   slug: string
   prix: number
+  prixAnnuel?: number | null
   devise?: string
   periodiciteJours?: number
   toleranceJours?: number
@@ -721,6 +761,7 @@ export type OffreUncheckedCreateWithoutAppInput = {
   nom: string
   slug: string
   prix: number
+  prixAnnuel?: number | null
   devise?: string
   periodiciteJours?: number
   toleranceJours?: number
@@ -761,6 +802,7 @@ export type OffreCreateWithoutAbonnementsInput = {
   nom: string
   slug: string
   prix: number
+  prixAnnuel?: number | null
   devise?: string
   periodiciteJours?: number
   toleranceJours?: number
@@ -776,6 +818,7 @@ export type OffreUncheckedCreateWithoutAbonnementsInput = {
   nom: string
   slug: string
   prix: number
+  prixAnnuel?: number | null
   devise?: string
   periodiciteJours?: number
   toleranceJours?: number
@@ -805,6 +848,7 @@ export type OffreUpdateWithoutAbonnementsInput = {
   nom?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   prix?: Prisma.IntFieldUpdateOperationsInput | number
+  prixAnnuel?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   devise?: Prisma.StringFieldUpdateOperationsInput | string
   periodiciteJours?: Prisma.IntFieldUpdateOperationsInput | number
   toleranceJours?: Prisma.IntFieldUpdateOperationsInput | number
@@ -820,6 +864,7 @@ export type OffreUncheckedUpdateWithoutAbonnementsInput = {
   nom?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   prix?: Prisma.IntFieldUpdateOperationsInput | number
+  prixAnnuel?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   devise?: Prisma.StringFieldUpdateOperationsInput | string
   periodiciteJours?: Prisma.IntFieldUpdateOperationsInput | number
   toleranceJours?: Prisma.IntFieldUpdateOperationsInput | number
@@ -834,6 +879,7 @@ export type OffreCreateManyConfigurationInput = {
   nom: string
   slug: string
   prix: number
+  prixAnnuel?: number | null
   devise?: string
   periodiciteJours?: number
   toleranceJours?: number
@@ -846,6 +892,7 @@ export type OffreUpdateWithoutConfigurationInput = {
   nom?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   prix?: Prisma.IntFieldUpdateOperationsInput | number
+  prixAnnuel?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   devise?: Prisma.StringFieldUpdateOperationsInput | string
   periodiciteJours?: Prisma.IntFieldUpdateOperationsInput | number
   toleranceJours?: Prisma.IntFieldUpdateOperationsInput | number
@@ -861,6 +908,7 @@ export type OffreUncheckedUpdateWithoutConfigurationInput = {
   nom?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   prix?: Prisma.IntFieldUpdateOperationsInput | number
+  prixAnnuel?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   devise?: Prisma.StringFieldUpdateOperationsInput | string
   periodiciteJours?: Prisma.IntFieldUpdateOperationsInput | number
   toleranceJours?: Prisma.IntFieldUpdateOperationsInput | number
@@ -875,6 +923,7 @@ export type OffreUncheckedUpdateManyWithoutConfigurationInput = {
   nom?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   prix?: Prisma.IntFieldUpdateOperationsInput | number
+  prixAnnuel?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   devise?: Prisma.StringFieldUpdateOperationsInput | string
   periodiciteJours?: Prisma.IntFieldUpdateOperationsInput | number
   toleranceJours?: Prisma.IntFieldUpdateOperationsInput | number
@@ -887,6 +936,7 @@ export type OffreCreateManyAppInput = {
   nom: string
   slug: string
   prix: number
+  prixAnnuel?: number | null
   devise?: string
   periodiciteJours?: number
   toleranceJours?: number
@@ -900,6 +950,7 @@ export type OffreUpdateWithoutAppInput = {
   nom?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   prix?: Prisma.IntFieldUpdateOperationsInput | number
+  prixAnnuel?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   devise?: Prisma.StringFieldUpdateOperationsInput | string
   periodiciteJours?: Prisma.IntFieldUpdateOperationsInput | number
   toleranceJours?: Prisma.IntFieldUpdateOperationsInput | number
@@ -914,6 +965,7 @@ export type OffreUncheckedUpdateWithoutAppInput = {
   nom?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   prix?: Prisma.IntFieldUpdateOperationsInput | number
+  prixAnnuel?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   devise?: Prisma.StringFieldUpdateOperationsInput | string
   periodiciteJours?: Prisma.IntFieldUpdateOperationsInput | number
   toleranceJours?: Prisma.IntFieldUpdateOperationsInput | number
@@ -928,6 +980,7 @@ export type OffreUncheckedUpdateManyWithoutAppInput = {
   nom?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   prix?: Prisma.IntFieldUpdateOperationsInput | number
+  prixAnnuel?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   devise?: Prisma.StringFieldUpdateOperationsInput | string
   periodiciteJours?: Prisma.IntFieldUpdateOperationsInput | number
   toleranceJours?: Prisma.IntFieldUpdateOperationsInput | number
@@ -973,6 +1026,7 @@ export type OffreSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   nom?: boolean
   slug?: boolean
   prix?: boolean
+  prixAnnuel?: boolean
   devise?: boolean
   periodiciteJours?: boolean
   toleranceJours?: boolean
@@ -991,6 +1045,7 @@ export type OffreSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   nom?: boolean
   slug?: boolean
   prix?: boolean
+  prixAnnuel?: boolean
   devise?: boolean
   periodiciteJours?: boolean
   toleranceJours?: boolean
@@ -1007,6 +1062,7 @@ export type OffreSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   nom?: boolean
   slug?: boolean
   prix?: boolean
+  prixAnnuel?: boolean
   devise?: boolean
   periodiciteJours?: boolean
   toleranceJours?: boolean
@@ -1023,6 +1079,7 @@ export type OffreSelectScalar = {
   nom?: boolean
   slug?: boolean
   prix?: boolean
+  prixAnnuel?: boolean
   devise?: boolean
   periodiciteJours?: boolean
   toleranceJours?: boolean
@@ -1031,7 +1088,7 @@ export type OffreSelectScalar = {
   createdAt?: boolean
 }
 
-export type OffreOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "appId" | "nom" | "slug" | "prix" | "devise" | "periodiciteJours" | "toleranceJours" | "actif" | "configurationId" | "createdAt", ExtArgs["result"]["offre"]>
+export type OffreOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "appId" | "nom" | "slug" | "prix" | "prixAnnuel" | "devise" | "periodiciteJours" | "toleranceJours" | "actif" | "configurationId" | "createdAt", ExtArgs["result"]["offre"]>
 export type OffreInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   app?: boolean | Prisma.AppDefaultArgs<ExtArgs>
   configuration?: boolean | Prisma.Offre$configurationArgs<ExtArgs>
@@ -1060,6 +1117,7 @@ export type $OffrePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     nom: string
     slug: string
     prix: number
+    prixAnnuel: number | null
     devise: string
     periodiciteJours: number
     toleranceJours: number
@@ -1497,6 +1555,7 @@ export interface OffreFieldRefs {
   readonly nom: Prisma.FieldRef<"Offre", 'String'>
   readonly slug: Prisma.FieldRef<"Offre", 'String'>
   readonly prix: Prisma.FieldRef<"Offre", 'Int'>
+  readonly prixAnnuel: Prisma.FieldRef<"Offre", 'Int'>
   readonly devise: Prisma.FieldRef<"Offre", 'String'>
   readonly periodiciteJours: Prisma.FieldRef<"Offre", 'Int'>
   readonly toleranceJours: Prisma.FieldRef<"Offre", 'Int'>

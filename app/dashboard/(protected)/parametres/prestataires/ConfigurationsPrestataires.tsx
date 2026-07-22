@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type Prestataire = "CAMPAY" | "MESOMB" | "PAYDUNYA" | "FLUTTERWAVE";
 
@@ -184,6 +185,19 @@ export function ConfigurationsPrestataires() {
         {!chargement && configs.length === 0 && (
           <div className="px-4.5 py-6 text-sm text-kola-muted">Aucun prestataire connecte pour l&apos;instant.</div>
         )}
+        {chargement &&
+          [0, 1].map((i) => (
+            <div key={i} className="grid grid-cols-[1fr_1fr_0.6fr_0.6fr_1.2fr] items-center gap-3 border-b border-[#f4efe4] px-4.5 py-3 last:border-b-0">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-4 w-20" />
+              <Skeleton className="h-5 w-14 rounded-full" />
+              <Skeleton className="h-4 w-10" />
+              <div className="flex justify-end gap-2">
+                <Skeleton className="h-8 w-16 rounded-md" />
+                <Skeleton className="h-8 w-16 rounded-md" />
+              </div>
+            </div>
+          ))}
         {configs.map((c) => (
           <div
             key={c.id}

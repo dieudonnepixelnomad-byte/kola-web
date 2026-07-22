@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type Transaction = {
   id: string;
@@ -72,6 +73,17 @@ export function PaiementsPage() {
           <div>Reçu le</div>
         </div>
         {!chargement && transactions.length === 0 && <div className="px-4.5 py-6 text-sm text-kola-muted">Aucune transaction.</div>}
+        {chargement &&
+          [0, 1, 2, 3].map((i) => (
+            <div key={i} className="grid grid-cols-[1.2fr_0.7fr_0.8fr_0.7fr_0.7fr_1fr] items-center gap-3 border-b border-[#f4efe4] px-4.5 py-3 last:border-b-0">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-4 w-16" />
+              <Skeleton className="h-4 w-16" />
+              <Skeleton className="h-4 w-12" />
+              <Skeleton className="h-5 w-16 rounded-full" />
+              <Skeleton className="h-4 w-20" />
+            </div>
+          ))}
         {transactions.map((t) => (
           <div key={t.id} className="grid grid-cols-[1.2fr_0.7fr_0.8fr_0.7fr_0.7fr_1fr] items-center gap-3 border-b border-[#f4efe4] px-4.5 py-3 last:border-b-0">
             <div className="font-mono text-sm">{t.abonnement.abonne.identifiantExterne}</div>

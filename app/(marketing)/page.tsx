@@ -20,7 +20,7 @@ export default async function LandingPage() {
     ? await prisma.offre.findMany({
         where: { appId: appPlateforme.id },
         orderBy: { prix: "asc" },
-        select: { nom: true, slug: true, prix: true, devise: true },
+        select: { nom: true, slug: true, prix: true, prixAnnuel: true, devise: true },
       })
     : [];
 

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type Abonnement = { statut: string; dateEcheance: string | null; lienPaiement: string; offreNom: string; prix: number };
 
@@ -49,7 +50,16 @@ export function FacturationPage() {
           </CardContent>
         </Card>
       ) : (
-        <p className="text-sm text-kola-muted">Chargement...</p>
+        <Card className="max-w-md">
+          <CardHeader>
+            <Skeleton className="h-5 w-32" />
+          </CardHeader>
+          <CardContent className="flex flex-col gap-3">
+            <Skeleton className="h-4 w-40" />
+            <Skeleton className="h-4 w-52" />
+            <Skeleton className="h-9 w-32 rounded-md" />
+          </CardContent>
+        </Card>
       )}
     </div>
   );

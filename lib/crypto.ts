@@ -34,6 +34,10 @@ export function genererCleSecrete(): string {
   return `sk_${randomBytes(24).toString("hex")}`;
 }
 
+export function genererClePublique(): string {
+  return `pk_${randomBytes(18).toString("hex")}`;
+}
+
 export function hashSecret(secret: string): string {
   return createHash("sha256").update(secret).digest("hex");
 }

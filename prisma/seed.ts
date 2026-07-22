@@ -28,21 +28,22 @@ async function creerOrganisationEtTenant(params: {
 
 async function main() {
   // --- Tenant systeme "Kola" (dogfooding, §11) ---------------------------
-  const tenantSysteme = await creerOrganisationEtTenant({
+  const tenant = await creerOrganisationEtTenant({
     nom: "Kola",
     slug: "kola",
     estSysteme: true,
   });
 
-  let appPlateforme = await prisma.app.findFirst({
-    where: { tenantId: tenantSysteme.id, nom: "Plateforme" },
+  let app = await prisma.app.findFirst({
+    where: { tenantId: tenant.id, nom: "Plateforme" },
   });
-  if (!appPlateforme) {
-    appPlateforme = await prisma.app.create({
-      data: { tenantId: tenantSysteme.id, nom: "Plateforme", plateforme: "android" },
+  if (!app) {
+    app = await prisma.app.create({
+      data: { tenantId: tenant.id, nom: "Plateforme", plateforme: "android" },
     });
   }
 
+  const REMISE_ANNUELLE = 0.4; // §2.2 : -40% sur le forfait annuel vs 12x le mensuel
   const paliers = [
     { slug: "decouverte", nom: "Decouverte", prix: 0, plafond: 50 },
     { slug: "standard", nom: "Standard", prix: 25000, plafond: 500 },
@@ -50,14 +51,16 @@ async function main() {
     { slug: "echelle", nom: "Echelle", prix: 120000, plafond: Infinity },
   ];
   for (const palier of paliers) {
+    const prixAnnuel = palier.prix === 0 ? 0 : Math.round(palier.prix * 12 * (1 - REMISE_ANNUELLE));
     await prisma.offre.upsert({
-      where: { appId_slug: { appId: appPlateforme.id, slug: palier.slug } },
-      update: {},
+      where: { appId_slug: { appId: app.id, slug: palier.slug } },
+      update: { prixAnnuel },
       create: {
-        appId: appPlateforme.id,
+        appId: app.id,
         nom: palier.nom,
         slug: palier.slug,
         prix: palier.prix,
+        prixAnnuel,
         devise: "XAF",
         periodiciteJours: 30,
         toleranceJours: 7,
@@ -66,16 +69,7 @@ async function main() {
   }
   console.log("Tenant systeme 'Kola' seede (paliers de facturation, §2.2).");
 
-  // --- Tenant de dev (donnees de test) ------------------------------------
-  const campayAppId = process.env.CAMPAY_APP_USERNAME;
-  const campayAppSecret = process.env.CAMPAY_APP_PASSWORD;
-
-  const tenant = await creerOrganisationEtTenant({
-    nom: "Dieudonne",
-    slug: "dieudonne",
-    estSysteme: false,
-  });
-
+  // --- Parametres tenant systeme -------------------------------------------
   for (const modele of MODELES_DEFAUT) {
     await prisma.modeleRelance.upsert({
       where: { tenantId_type_canal: { tenantId: tenant.id, type: modele.type, canal: "WHATSAPP" } },
@@ -84,6 +78,8 @@ async function main() {
     });
   }
 
+  const campayAppId = process.env.CAMPAY_APP_USERNAME;
+  const campayAppSecret = process.env.CAMPAY_APP_PASSWORD;
   if (campayAppId && campayAppSecret) {
     const configExistante = await prisma.configurationPaiement.findFirst({
       where: { tenantId: tenant.id, prestataire: "CAMPAY" },
@@ -105,72 +101,10 @@ async function main() {
     }
   }
 
-  let app = await prisma.app.findFirst({ where: { tenantId: tenant.id, nom: "Kola Test App" } });
-  if (!app) {
-    app = await prisma.app.create({
-      data: { tenantId: tenant.id, nom: "Kola Test App", plateforme: "android" },
-    });
-  }
-
-  const offreMensuelle = await prisma.offre.upsert({
-    where: { appId_slug: { appId: app.id, slug: "premium" } },
-    update: {},
-    create: {
-      appId: app.id,
-      nom: "Premium mensuel",
-      slug: "premium",
-      prix: 100,
-      devise: "XAF",
-      periodiciteJours: 30,
-      toleranceJours: 3,
-    },
-  });
-
-  const offreAnnuelle = await prisma.offre.upsert({
-    where: { appId_slug: { appId: app.id, slug: "premium-annuel" } },
-    update: {},
-    create: {
-      appId: app.id,
-      nom: "Premium annuel",
-      slug: "premium-annuel",
-      prix: 1000,
-      devise: "XAF",
-      periodiciteJours: 365,
-      toleranceJours: 7,
-    },
-  });
-
-  const identifiantExterne = "+237671960300";
-  const abonne = await prisma.abonne.upsert({
-    where: { tenantId_identifiantExterne: { tenantId: tenant.id, identifiantExterne } },
-    update: {},
-    create: { tenantId: tenant.id, identifiantExterne, telephone: identifiantExterne },
-  });
-
-  let abonnementMensuel = await prisma.abonnement.findFirst({
-    where: { abonneId: abonne.id, offreId: offreMensuelle.id },
-  });
-  if (!abonnementMensuel) {
-    abonnementMensuel = await prisma.abonnement.create({
-      data: { abonneId: abonne.id, offreId: offreMensuelle.id, statut: "COUPE" },
-    });
-  }
-
-  let abonnementAnnuel = await prisma.abonnement.findFirst({
-    where: { abonneId: abonne.id, offreId: offreAnnuelle.id },
-  });
-  if (!abonnementAnnuel) {
-    abonnementAnnuel = await prisma.abonnement.create({
-      data: { abonneId: abonne.id, offreId: offreAnnuelle.id, statut: "COUPE" },
-    });
-  }
-
   console.log("Tenant.slug :", tenant.slug);
   console.log("App.cleApiPublique :", app.cleApiPublique);
-  console.log("Abonne.identifiantExterne :", abonne.identifiantExterne);
-  console.log("Offre.slug (mensuel) :", offreMensuelle.slug, "- lienPaiement :", abonnementMensuel.lienPaiement);
-  console.log("Offre.slug (annuel)  :", offreAnnuelle.slug, "- lienPaiement :", abonnementAnnuel.lienPaiement);
 
+  // --- Compte super-admin (seul utilisateur du seed) ----------------------
   const adminEmail = process.env.SEED_ADMIN_EMAIL;
   const adminPassword = process.env.SEED_ADMIN_PASSWORD;
   if (adminEmail && adminPassword) {
@@ -197,7 +131,7 @@ async function main() {
             createdAt: new Date(),
           },
         });
-        console.log("Utilisateur rattache au tenant 'dieudonne' en tant que proprietaire.");
+        console.log("Utilisateur rattache au tenant 'kola' en tant que proprietaire.");
       }
     }
   } else {

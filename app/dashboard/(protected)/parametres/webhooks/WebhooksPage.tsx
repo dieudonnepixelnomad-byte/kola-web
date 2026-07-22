@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const EVENEMENTS = ["abonnement.active", "abonnement.tolerance", "abonnement.coupe", "abonnement.expire", "transaction.reussie"];
 
@@ -18,10 +19,13 @@ export function WebhooksPage() {
   const [evenements, setEvenements] = useState<string[]>([]);
   const [secretAffiche, setSecretAffiche] = useState<string | null>(null);
   const [envoi, setEnvoi] = useState(false);
+  const [chargement, setChargement] = useState(true);
 
   async function charger() {
+    setChargement(true);
     const res = await fetch("/api/admin/webhooks");
     if (res.ok) setWebhooks((await res.json()).webhooks);
+    setChargement(false);
   }
 
   useEffect(() => {
@@ -108,7 +112,17 @@ export function WebhooksPage() {
       )}
 
       <div className="overflow-hidden rounded-2xl border border-kola-border bg-white">
-        {webhooks.length === 0 && <div className="px-4.5 py-6 text-sm text-kola-muted">Aucun webhook configuré.</div>}
+        {!chargement && webhooks.length === 0 && <div className="px-4.5 py-6 text-sm text-kola-muted">Aucun webhook configuré.</div>}
+        {chargement &&
+          [0, 1].map((i) => (
+            <div key={i} className="flex flex-col gap-1.5 border-b border-[#f4efe4] px-4.5 py-3 last:border-b-0">
+              <div className="flex items-center justify-between">
+                <Skeleton className="h-4 w-48" />
+                <Skeleton className="h-5 w-14 rounded-full" />
+              </div>
+              <Skeleton className="h-4 w-32" />
+            </div>
+          ))}
         {webhooks.map((w) => (
           <div key={w.id} className="flex flex-col gap-1.5 border-b border-[#f4efe4] px-4.5 py-3 last:border-b-0">
             <div className="flex items-center justify-between">

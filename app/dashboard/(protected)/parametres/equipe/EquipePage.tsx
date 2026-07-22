@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type Membre = { id: string; role: string; user: { name: string; email: string } };
 type Invitation = { id: string; email: string; role: string | null; status: string };
@@ -18,6 +19,7 @@ export function EquipePage() {
   const [role, setRole] = useState("lecture");
   const [erreur, setErreur] = useState<string | null>(null);
   const [envoi, setEnvoi] = useState(false);
+  const [chargement, setChargement] = useState(true);
 
   async function charger() {
     const [membresRes, invitationsRes] = await Promise.all([
@@ -26,6 +28,7 @@ export function EquipePage() {
     ]);
     if (membresRes.data) setMembres(membresRes.data.members as unknown as Membre[]);
     if (invitationsRes.data) setInvitations(invitationsRes.data as unknown as Invitation[]);
+    setChargement(false);
   }
 
   useEffect(() => {
@@ -90,6 +93,19 @@ export function EquipePage() {
       {erreur && <p className="text-sm text-red-600">{erreur}</p>}
 
       <div className="overflow-hidden rounded-2xl border border-kola-border bg-white">
+        {chargement &&
+          [0, 1].map((i) => (
+            <div key={i} className="flex items-center justify-between gap-3 border-b border-[#f4efe4] px-4.5 py-3 last:border-b-0">
+              <div className="flex items-center gap-2.5">
+                <Skeleton className="h-8 w-8 rounded-full" />
+                <div className="flex flex-col gap-1">
+                  <Skeleton className="h-4 w-28" />
+                  <Skeleton className="h-3 w-36" />
+                </div>
+              </div>
+              <Skeleton className="h-8 w-36 rounded-md" />
+            </div>
+          ))}
         {membres.map((m) => (
           <div key={m.id} className="flex items-center justify-between gap-3 border-b border-[#f4efe4] px-4.5 py-3 last:border-b-0">
             <div className="flex items-center gap-2.5">

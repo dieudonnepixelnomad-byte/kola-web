@@ -491,14 +491,6 @@ export type LivraisonWebhookUncheckedUpdateManyWithoutWebhookSortantNestedInput 
   deleteMany?: Prisma.LivraisonWebhookScalarWhereInput | Prisma.LivraisonWebhookScalarWhereInput[]
 }
 
-export type NullableIntFieldUpdateOperationsInput = {
-  set?: number | null
-  increment?: number
-  decrement?: number
-  multiply?: number
-  divide?: number
-}
-
 export type LivraisonWebhookCreateWithoutWebhookSortantInput = {
   id?: string
   evenement: string

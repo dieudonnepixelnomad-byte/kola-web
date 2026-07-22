@@ -1,16 +1,29 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { organization } from "better-auth/plugins";
+import { Resend } from "resend";
 import { prisma } from "./prisma";
 import { creerTenantPourOrganisation } from "./tenant";
 import { ac, proprietaire, admin, lecture } from "./permissions";
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Roles Kola : proprietaire (tout, y compris facturation/suppression), admin
 // (offres/prestataires/abonnes/relances/webhooks, pas la facturation), lecture
 // (consultation seule). Cf. docs/kola-web-cahier-des-charges.md §5.2.
 export const auth = betterAuth({
   database: prismaAdapter(prisma, { provider: "postgresql" }),
-  emailAndPassword: { enabled: true },
+  emailAndPassword: {
+    enabled: true,
+    sendResetPassword: async ({ user, url }) => {
+      await resend.emails.send({
+        from: process.env.RESEND_FROM_EMAIL ?? "Kola <onboarding@resend.dev>",
+        to: user.email,
+        subject: "Reinitialisation de ton mot de passe Kola",
+        html: `<p>Clique ici pour reinitialiser ton mot de passe : <a href="${url}">${url}</a></p><p>Si tu n'es pas a l'origine de cette demande, ignore cet email.</p>`,
+      });
+    },
+  },
   secret: process.env.BETTER_AUTH_SECRET,
   baseURL: process.env.BETTER_AUTH_URL,
   basePath: "/api/admin/auth",

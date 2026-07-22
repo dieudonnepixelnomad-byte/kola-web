@@ -12,6 +12,7 @@ const bodySchema = z.object({
     .min(1)
     .regex(/^[a-z0-9-]+$/, "slug: lettres minuscules, chiffres, tirets uniquement"),
   prix: z.number().int().min(0),
+  remisePourcentageAnnuel: z.number().min(0).max(100).default(0),
   devise: z.string().default("XAF"),
   periodiciteJours: z.number().int().min(1).default(30),
   toleranceJours: z.number().int().min(0).default(3),
@@ -41,12 +42,15 @@ export async function POST(req: Request) {
     if (!config) return NextResponse.json({ error: "Configuration de paiement introuvable" }, { status: 400 });
   }
 
+  const prixAnnuel = Math.round(parsed.data.prix * 12 * (1 - parsed.data.remisePourcentageAnnuel / 100));
+
   const offre = await prisma.offre.create({
     data: {
       appId: app.id,
       nom: parsed.data.nom,
       slug: parsed.data.slug,
       prix: parsed.data.prix,
+      prixAnnuel,
       devise: parsed.data.devise,
       periodiciteJours: parsed.data.periodiciteJours,
       toleranceJours: parsed.data.toleranceJours,

@@ -86,7 +86,8 @@ model Offre {
   app              App     @relation(fields: [appId], references: [id])
   nom              String // ex: "Premium"
   slug             String // ex: "premium" - utilise par le SDK dans isActive('premium')
-  prix             Int // en FCFA, entier (pas de centimes)
+  prix             Int // en FCFA, entier (pas de centimes) - tarif mensuel
+  prixAnnuel       Int? // en FCFA - tarif annuel (remise appliquee au moment du seed/edition, pas recalculee automatiquement)
   devise           String  @default("XAF")
   periodiciteJours Int     @default(30)
   toleranceJours   Int     @default(3)

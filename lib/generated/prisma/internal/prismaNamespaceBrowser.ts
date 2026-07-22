@@ -137,6 +137,7 @@ export const OffreScalarFieldEnum = {
   nom: 'nom',
   slug: 'slug',
   prix: 'prix',
+  prixAnnuel: 'prixAnnuel',
   devise: 'devise',
   periodiciteJours: 'periodiciteJours',
   toleranceJours: 'toleranceJours',
