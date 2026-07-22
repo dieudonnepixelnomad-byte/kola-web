@@ -11,6 +11,13 @@ import { Faq } from "./_components/Faq";
 import { TestimonialWall } from "./_components/TestimonialWall";
 import { Footer } from "./_components/Footer";
 
+// Sans ceci, Next.js prerend cette page en statique au build (aucune donnee
+// dynamique utilisee) et sert ensuite ce snapshot fige en prod indefiniment
+// -- les offres seedees apres coup n'apparaissent jamais tant qu'aucun
+// redeploy n'a lieu. Revalidation ISR pour rester a jour sans repasser en
+// full dynamic (cout par requete).
+export const revalidate = 300;
+
 export default async function LandingPage() {
   const tenantSysteme = await prisma.tenant.findFirst({ where: { estSysteme: true } });
   const appPlateforme = tenantSysteme
