@@ -19,6 +19,24 @@ const bodySchema = z.object({
   configurationId: z.string().nullable().optional(),
 });
 
+export async function GET() {
+  let ctx;
+  try {
+    ctx = await contexteTenant();
+  } catch (e) {
+    if (e instanceof TenantAuthError) return NextResponse.json({ error: e.message }, { status: e.status });
+    throw e;
+  }
+
+  const offres = await prisma.offre.findMany({
+    where: { app: { tenantId: ctx.tenantId } },
+    select: { id: true, slug: true, nom: true },
+    orderBy: { createdAt: "asc" },
+  });
+
+  return NextResponse.json({ offres });
+}
+
 export async function POST(req: Request) {
   let ctx;
   try {

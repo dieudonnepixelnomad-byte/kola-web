@@ -829,6 +829,7 @@ C'est la cohérence du produit : **Kola encaisse ses propres clients avec Kola.*
 - **Chiffrement des secrets** : identifiants prestataires en AES-256-GCM ; clé maîtresse en variable d'environnement Vercel (KMS en V2). Jamais loggés, jamais renvoyés en clair par une API.
 - **Idempotence** : webhooks (`@@unique provider+providerTransactionId`), cron (pré-états), livraisons sortantes (retry borné).
 - **Disponibilité** : `/api/v1/subscriptions/status` est sur le chemin critique de **toutes** les apps clientes → viser une haute dispo ; le cache JWT 72 h du SDK amortit une panne temporaire (fail-safe côté client).
+- **Création paresseuse de l'Abonnement** : `/api/v1/subscriptions/status` ne se contente plus de chercher l'`Abonnement` le plus récent — s'il n'existe pas, il le crée à la volée (`statut: COUPE`), via `lib/abonnement.ts::obtenirOuCreerAbonnement`, partagée avec `/api/admin/lien-paiement` (recherche/génération de lien par numéro, cf. `kola-automatisation-acces-premium-cahier-des-charges.md` §3). Ne modifie jamais un `Abonnement` existant ni ne régénère son `lienPaiement`.
 - **Rate limiting** : par clé publique (endpoint SDK) et par clé secrète (API REST) — protège contre l'abus et le scraping de statut.
 - **Auth** : argon2id, sessions révocables, cookies durcis, protection CSRF sur le dashboard, verrouillage après N échecs.
 - **Observabilité** : logs structurés, métriques d'erreur webhook/relance, alerte si le cron échoue ou si un prestataire renvoie un taux d'échec anormal.
@@ -868,6 +869,7 @@ Reprend les 7 scénarios MVP (paiement sandbox → activation, double webhook, a
 13. **Webhook sortant** : événement `abonnement.active` livré, signé, rejoué avec back-off en cas d'échec HTTP.
 14. **Dogfooding** : impayé d'un tenant → tolérance puis lecture seule, sans casser son endpoint SDK pendant la tolérance.
 15. **Chiffrement** : les identifiants prestataires ne sont jamais lisibles en base ni renvoyés en clair par aucune API.
+16. **Création paresseuse de l'Abonnement** : `GET /api/v1/subscriptions/status` pour un `identifiantExterne` inconnu crée l'`Abonne` et l'`Abonnement` (`statut: COUPE`, `actif: false`) au premier appel, sans jamais dupliquer si rappelé. `GET /api/admin/lien-paiement` avec le même numéro retourne le même `lienPaiement`.
 
 ---
 

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { signerToken } from "@/lib/jwt";
+import { obtenirOuCreerAbonnement, OffreInconnueError } from "@/lib/abonnement";
 
 const querySchema = z.object({
   cle: z.string().min(1),
@@ -27,28 +28,14 @@ export async function GET(req: Request) {
   }
   const tenantId = app.tenantId;
 
-  const abonne = await prisma.abonne.upsert({
-    where: { tenantId_identifiantExterne: { tenantId, identifiantExterne } },
-    update: {},
-    create: { tenantId, identifiantExterne },
-  });
-
-  const offre = await prisma.offre.findFirst({
-    where: { slug: offreSlug, appId: app.id },
-  });
-  if (!offre) {
-    return NextResponse.json({ error: "Offre introuvable" }, { status: 404 });
-  }
-
-  let abonnement = await prisma.abonnement.findFirst({
-    where: { abonneId: abonne.id, offreId: offre.id },
-    orderBy: { createdAt: "desc" },
-  });
-
-  if (!abonnement) {
-    abonnement = await prisma.abonnement.create({
-      data: { abonneId: abonne.id, offreId: offre.id, statut: "COUPE" },
-    });
+  let abonnement;
+  try {
+    abonnement = await obtenirOuCreerAbonnement(tenantId, identifiantExterne, offreSlug);
+  } catch (e) {
+    if (e instanceof OffreInconnueError) {
+      return NextResponse.json({ error: "Offre introuvable" }, { status: 404 });
+    }
+    throw e;
   }
 
   const actif = abonnement.statut === "ACTIF" || abonnement.statut === "TOLERANCE";

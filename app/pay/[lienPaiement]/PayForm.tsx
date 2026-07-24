@@ -148,7 +148,7 @@ export function PayForm({
       />
 
       <label className="mb-2 block text-[13px] font-bold">Choisis ton opérateur</label>
-      <div className="mb-5.5 grid grid-cols-2 gap-2.5">
+      <div className="mb-5.5 grid grid-cols-1 gap-2.5">
         {OPERATEURS.map((o) => {
           const on = operateur === o.key;
           return (
@@ -156,8 +156,12 @@ export function PayForm({
               key={o.key}
               type="button"
               onClick={() => setOperateur(o.key)}
+              onTouchEnd={(e) => {
+                e.preventDefault();
+                setOperateur(o.key);
+              }}
               className={
-                "flex items-center gap-2.5 rounded-[14px] border-2 px-3 py-2.5 " +
+                "touch-manipulation flex items-center gap-2.5 rounded-[14px] border-2 px-3 py-2.5 select-none " +
                 (on ? "border-kola-accent bg-[#f2fbf6]" : "border-kola-border bg-white")
               }
             >

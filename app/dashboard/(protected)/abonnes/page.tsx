@@ -4,6 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CopyButton } from "./CopyButton";
+import { RechercheLienPaiement } from "./RechercheLienPaiement";
 
 type Abonnement = {
   id: string;
@@ -43,13 +44,26 @@ async function getAbonnements(): Promise<Abonnement[]> {
   return data.abonnements;
 }
 
+async function getOffreSlugParDefaut(): Promise<string | null> {
+  const h = await headers();
+  const host = h.get("host");
+  const protocole = process.env.NODE_ENV === "production" ? "https" : "http";
+  const res = await fetch(`${protocole}://${host}/api/admin/offres`, {
+    headers: { cookie: h.get("cookie") ?? "" },
+    cache: "no-store",
+  });
+  if (!res.ok) return null;
+  const data = await res.json();
+  return data.offres[0]?.slug ?? null;
+}
+
 export default async function AbonnesPage({
   searchParams,
 }: {
   searchParams: Promise<{ statut?: string }>;
 }) {
   const { statut } = await searchParams;
-  const abonnements = await getAbonnements();
+  const [abonnements, offreSlugParDefaut] = await Promise.all([getAbonnements(), getOffreSlugParDefaut()]);
 
   const filtre = statut ?? "tous";
   const counts: Record<string, number> = { tous: abonnements.length };
@@ -88,6 +102,8 @@ export default async function AbonnesPage({
           </a>
         </Button>
       </div>
+
+      {offreSlugParDefaut && <RechercheLienPaiement offreSlug={offreSlugParDefaut} />}
 
       <div className="mb-3.5 flex flex-wrap gap-1.5">
         {filtres.map((f) => {
